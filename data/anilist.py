@@ -84,11 +84,15 @@ class AniList:
             else:
                 title = data["title"]["romaji"]
 
-            score = (
-                data["meanScore"] + data["averageScore"]
-            ) / 20 if data["meanScore"] and data["averageScore"] else (
-                data["meanScore"] / 10 if data.get("meanScore") else data["averageScore"] / 10
-            )
+            # score = (
+            #     data["meanScore"] + data["averageScore"]
+            # ) / 20 if data["meanScore"] and data["averageScore"] else (
+            #     data["meanScore"] / 10 if data.get("meanScore") else data["averageScore"] / 10
+            # )
+            if data["averageScore"] is not None:
+                score = data["averageScore"]/10
+            else:
+                score = -1
 
             count = sum(item["amount"] for item in data["stats"]["scoreDistribution"])
 

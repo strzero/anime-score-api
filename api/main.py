@@ -1,21 +1,20 @@
+import sys
+import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
 from concurrent.futures import ThreadPoolExecutor
-import sys
-import os
+from data.myanimelist import MyAnimeList
+from data.anilist import AniList
+from data.filmarks import Filmarks
+from data.anikore import Anikore
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from external.myanimelist import MyAnimeList
-from external.anilist import AniList
-from external.filmarks import Filmarks
-from external.anikore import Anikore
 
 app = FastAPI()
 
-
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 origins = [
     "http://localhost:3000"
 ]
