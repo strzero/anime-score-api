@@ -1,8 +1,5 @@
-import sys
-import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict
+from fastapi import FastAPI
+from typing import List
 from concurrent.futures import ThreadPoolExecutor
 from data.myanimelist import MyAnimeList
 from data.anilist import AniList
@@ -10,24 +7,22 @@ from data.filmarks import Filmarks
 from data.anikore import Anikore
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config.fastapi_setting import origins
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:3000"
-]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,      
-    allow_credentials=True,     
-    allow_methods=["*"],        
-    allow_headers=["*"],        
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
+
 
 class TitleRequest(BaseModel):
     title: str
+
 
 class IdRequest(BaseModel):
     title: str
@@ -36,52 +31,108 @@ class IdRequest(BaseModel):
     filmarks: str
     anikore: str
 
+
+# 初始化数据源对象
 myanimelist = MyAnimeList()
 anilist = AniList()
 filmarks = Filmarks()
 anikore = Anikore()
 
-@app.post("/get_id")
-async def get_id(titles: List[TitleRequest]):
-    results = []
+# 全局线程池配置
+executor = ThreadPoolExecutor()
 
-    with ThreadPoolExecutor() as executor:
-        for title in titles:
-            myanimelist_id = executor.submit(myanimelist.get_id, title.title)
-            anilist_id = executor.submit(anilist.get_id, title.title)
-            filmarks_id = executor.submit(filmarks.get_id, title.title)
-            anikore_id = executor.submit(anikore.get_id, title.title)
 
-            results.append({
-                "title": title.title,
-                "myanimelist": myanimelist_id.result(),
-                "anilist": anilist_id.result(),
-                "filmarks": filmarks_id.result(),
-                "anikore": anikore_id.result(),
-            })
+@app.on_event("shutdown")
+def shutdown_event():
+    executor.shutdown(wait=False)
+
+
+# 平台配置常量
+PLATFORMS_ID = [
+    ('myanimelist', myanimelist.get_id),
+    ('anilist', anilist.get_id),
+    ('filmarks', filmarks.get_id),
+    ('anikore', anikore.get_id),
+]
+
+PLATFORMS_SCORE = [
+    ('myanimelist', myanimelist.get_score, 'myanimelist'),
+    ('anilist', anilist.get_score, 'anilist'),
+    ('filmarks', filmarks.get_score, 'filmarks'),
+    ('anikore', anikore.get_score, 'anikore'),
+]
+
+
+def process_results(futures, result_handler):
+    """通用结果处理函数"""
+    results = {}
+    for *keys, future in futures:
+        try:
+            result = future.result()
+        except Exception:
+            result = None
+        results = result_handler(results, keys, result)
+    return results
+
+
+@app.post("/get_id_nodb")
+async def get_id_nodb(titles: List[TitleRequest]):
+    titles_list = [t.title for t in titles]
+
+    # 提交所有任务
+    futures = []
+    for title in titles_list:
+        for platform, method in PLATFORMS_ID:
+            future = executor.submit(method, title)
+            futures.append((title, platform, future))
+
+    # 处理结果
+    results = {}
+    for title, platform, future in futures:
+        try:
+            result = future.result()
+        except Exception:
+            result = None
+        if title not in results:
+            results[title] = {'title': title}
+        results[title][platform] = result
+
+    return list(results.values())
+
+
+@app.post("/get_score_nodb")
+async def get_score_nodb(ids: List[IdRequest]):
+    # 提交所有任务
+    futures = []
+    for idx, req in enumerate(ids):
+        for platform, method, field in PLATFORMS_SCORE:
+            id_value = getattr(req, field)
+            future = executor.submit(method, id_value)
+            futures.append((idx, platform, future))
+
+    # 处理结果
+    results = [{} for _ in ids]
+    for idx, platform, future in futures:
+        try:
+            results[idx][platform] = future.result()
+        except Exception:
+            results[idx][platform] = None
 
     return results
+
+
+# 保留原始接口（示例未修改部分）
+@app.post("/get_id")
+async def get_id(titles: List[TitleRequest]):
+    return await get_id_nodb(titles)
+
 
 @app.post("/get_score")
 async def get_score(ids: List[IdRequest]):
-    results = []
+    return await get_score_nodb(ids)
 
-    with ThreadPoolExecutor() as executor:
-        for id_request in ids:
-            myanimelist_score = executor.submit(myanimelist.get_score, id_request.myanimelist)
-            anilist_score = executor.submit(anilist.get_score, id_request.anilist)
-            filmarks_score = executor.submit(filmarks.get_score, id_request.filmarks)
-            anikore_score = executor.submit(anikore.get_score, id_request.anikore)
-
-            results.append({
-                "myanimelist": myanimelist_score.result(),
-                "anilist": anilist_score.result(),
-                "filmarks": filmarks_score.result(),
-                "anikore": anikore_score.result(),
-            })
-
-    return results
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
