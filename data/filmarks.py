@@ -1,77 +1,63 @@
 import os
 import re
-import requests
-from bs4 import BeautifulSoup
+import httpx
 import json
+from bs4 import BeautifulSoup
 from config import request_setting
 from utils.error import error_report
 
+BASE_URL = "https://filmarks.com"
 
-class Filmarks:
-    def __init__(self):
-        self.url = "https://filmarks.com"
-
-    def get_id(self, name: str):
-        try:
-            search_url = self.url + "/search/animes?q=" + name
-
-            page = requests.get(
+async def get_id(name: str):
+    search_url = f"{BASE_URL}/search/animes?q={name}"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
                 search_url, headers=request_setting.real_headers, timeout=request_setting.timeout
-            ).content
+            )
 
-            soup = BeautifulSoup(page, "lxml")
-            js_cassette_element = soup.select_one(".p-contents-grid .js-cassette")
-            if js_cassette_element:
-                data_mark = js_cassette_element.get("data-mark")
-                data = json.loads(data_mark)
-                anime_series_id = data.get("anime_series_id")
-                anime_season_id = data.get("anime_season_id")
-                
-                if anime_series_id and anime_season_id:
-                    return f"{anime_series_id}/{anime_season_id}"
-                else:
-                    return "Error"
-            else:
-                return "Error"
-        except Exception as e:
-            error_report(e, os.path.abspath(__file__))
+        soup = BeautifulSoup(response.text, "lxml")
+        js_cassette_element = soup.select_one(".p-contents-grid .js-cassette")
+
+        if not js_cassette_element:
             return "Error"
 
-    def get_score(self, local_id: str):
-        if local_id == "Error":
-            return "None"
+        data = json.loads(js_cassette_element.get("data-mark", "{}"))
+        anime_series_id = data.get("anime_series_id")
+        anime_season_id = data.get("anime_season_id")
 
-        try:
-            search_url = self.url + "/animes/" + local_id
+        return f"{anime_series_id}/{anime_season_id}" if anime_series_id and anime_season_id else "Error"
+    except Exception as e:
+        error_report(e, os.path.abspath(__file__))
+        return "Error"
 
-            page = requests.get(
+async def get_score(local_id: str):
+    if local_id == "Error":
+        return "None"
+
+    search_url = f"{BASE_URL}/animes/{local_id}"
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
                 search_url, headers=request_setting.real_headers, timeout=request_setting.timeout
-            ).content
+            )
 
-            soup = BeautifulSoup(page, "lxml")
+        soup = BeautifulSoup(response.text, "lxml")
 
+        score_element = soup.select_one("div.c2-rating-l__text")
+        score = float(score_element.text) * 2 if score_element and score_element.text != "-" else -1
 
-            fm_score = soup.find("div", attrs={"class": "c2-rating-l__text"}).string
-            if fm_score == "-":
-                score = -1
-            else:
-                score = float(fm_score) * 2
+        title_element = soup.select_one("h2.p-content-detail__title")
+        title = title_element.get_text(strip=True) if title_element else "Unknown Title"
 
+        og_description = soup.select_one("meta[property='og:description']")
+        count = 0
+        if og_description:
+            match = re.search(r"レビュー数：(\d+)件", og_description.get("content", ""))
+            if match:
+                count = int(match.group(1))
 
-            title = soup.find("h2", attrs={"class": "p-content-detail__title"})
-            title_text = title.get_text(strip=True) if title else "Unknown Title"
-
-
-            og_description = soup.find("meta", attrs={"property": "og:description"})
-            count = 0
-            if og_description:
-                content = og_description.get("content", "")
-
-                match = re.search(r"レビュー数：(\d+)件", content)
-                if match:
-                    count = int(match.group(1))
-
-            return title_text, score, count, local_id
-        except Exception as e:
-            error_report(e, os.path.abspath(__file__))
-            return "Error"
+        return title, score, count, local_id
+    except Exception as e:
+        error_report(e, os.path.abspath(__file__))
+        return "Error"
