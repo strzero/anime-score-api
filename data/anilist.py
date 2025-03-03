@@ -62,8 +62,12 @@ async def get_score(local_id: str):
         title = data.get("title", {}).get("english") or data.get("title", {}).get("native") or data.get("title", {}).get("romaji", "Unknown Title")
         score = (data.get("averageScore", -1) / 10) if data.get("averageScore") is not None else -1
         count = sum(item["amount"] for item in data.get("stats", {}).get("scoreDistribution", []))
-
-        return title, score, count, local_id
+        return {
+            "title": title,
+            "score": score,
+            "count": count,
+            "id": local_id,
+        }
     except Exception as e:
         error_report(e, os.path.abspath(__file__))
         return "Error"

@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException
-from typing import List
 import asyncio
+from fastapi import FastAPI
+from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from config.fastapi_setting import origins
@@ -26,54 +26,46 @@ class IdRequest(BaseModel):
     filmarks: str
     anikore: str
 
-
 async def process_title(title: TitleRequest):
-    myanimelist_id, anilist_id, filmarks_id, anikore_id = await asyncio.gather(
-        myanimelist.get_id(title.title),
-        anilist.get_id(title.title),
-        filmarks.get_id(title.title),
-        anikore.get_id(title.title)
-    )
     return {
         "title": title.title,
-        "myanimelist": myanimelist_id,
-        "anilist": anilist_id,
-        "filmarks": filmarks_id,
-        "anikore": anikore_id,
+        "myanimelist": await myanimelist.get_id(title.title),
+        "anilist": await anilist.get_id(title.title),
+        "filmarks": await filmarks.get_id(title.title),
+        "anikore": await anikore.get_id(title.title),
     }
 
 async def process_id_request(id_req: IdRequest):
-    myanimelist_score, anilist_score, filmarks_score, anikore_score = await asyncio.gather(
-        myanimelist.get_score(id_req.myanimelist),
-        anilist.get_score(id_req.anilist),
-        filmarks.get_score(id_req.filmarks),
-        anikore.get_score(id_req.anikore)
-    )
     return {
-        "myanimelist": myanimelist_score,
-        "anilist": anilist_score,
-        "filmarks": filmarks_score,
-        "anikore": anikore_score,
+        "myanimelist": await myanimelist.get_score(id_req.myanimelist),
+        "anilist": await anilist.get_score(id_req.anilist),
+        "filmarks": await filmarks.get_score(id_req.filmarks),
+        "anikore": await anikore.get_score(id_req.anikore),
     }
+
+async def run_tasks_with_delay(tasks):
+    results = []
+    for task in tasks:
+        results.append(asyncio.create_task(task))  # 启动任务但不等待
+        await asyncio.sleep(1)  # 每秒启动一个新任务
+    return await asyncio.gather(*results)
 
 @app.post("/get_id_nodb")
 async def get_id_nodb(titles: List[TitleRequest]):
     tasks = [process_title(title) for title in titles]
-    return await asyncio.gather(*tasks)
+    return await run_tasks_with_delay(tasks)
 
 @app.post("/get_score_nodb")
 async def get_score_nodb(ids: List[IdRequest]):
     tasks = [process_id_request(id_req) for id_req in ids]
-    return await asyncio.gather(*tasks)
+    return await run_tasks_with_delay(tasks)
 
 @app.post("/get_id")
 async def get_id(titles: List[TitleRequest]):
-    # 待补充数据库逻辑
     return await get_id_nodb(titles)
 
 @app.post("/get_score")
 async def get_score(ids: List[IdRequest]):
-    # 待补充数据库逻辑
     return await get_score_nodb(ids)
 
 if __name__ == "__main__":

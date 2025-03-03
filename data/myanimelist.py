@@ -39,12 +39,12 @@ async def get_score(local_id: str):
         score = soup.select_one("div.score-label")
         count = soup.select_one("span[itemprop='ratingCount']")
 
-        return (
-            title.get_text(strip=True) if title else "Unknown Title",
-            float(score.get_text(strip=True)) if score and score.get_text(strip=True) != "N/A" else -1,
-            int(count.get_text(strip=True)) if count else 0,
-            local_id,
-        )
+        return {
+            "title": title.get_text(strip=True) if title else "Unknown Title",
+            "score": float(score.get_text(strip=True)) if score and score.get_text(strip=True) != "N/A" else -1,
+            "count": int(count.get_text(strip=True)) if count else 0,
+            "id": local_id,
+        }
     except Exception as e:
         error_report(e, os.path.abspath(__file__))
         return "Error"

@@ -61,7 +61,12 @@ async def get_score(local_id: str):
         ).find("a")
         count = count_span.get_text(strip=True) if count_span else "0"
 
-        return title, score, int(count), local_id
+        return {
+            "title": title,
+            "score": score,
+            "count": int(count),
+            "id": local_id,
+        }
     except Exception as e:
         error_report(e, os.path.abspath(__file__))
         return "Error"

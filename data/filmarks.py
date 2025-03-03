@@ -57,7 +57,12 @@ async def get_score(local_id: str):
             if match:
                 count = int(match.group(1))
 
-        return title, score, count, local_id
+        return {
+            "title": title,
+            "score": score,
+            "count": count,
+            "id": local_id,
+        }
     except Exception as e:
         error_report(e, os.path.abspath(__file__))
         return "Error"
