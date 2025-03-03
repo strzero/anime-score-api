@@ -1,30 +1,21 @@
+from datetime import datetime, timedelta
+from fastapi import Depends, FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.future import select
+from typing import List
 import asyncio
 import logging
-from datetime import datetime, timedelta
-from fastapi import FastAPI
-from typing import List
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from sqlalchemy.orm import sessionmaker
 
-import config.fastapi_setting
-from config.fastapi_setting import origins
+from config import settings
 from data import myanimelist, anilist, filmarks, anikore
-from fastapi import Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlalchemy.future import select
-from sqlalchemy.exc import NoResultFound
-from models import IdLink, Score
-from fastapi import WebSocket, WebSocketDisconnect
-import asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-
-DATABASE_URL = "mysql+aiomysql://root:so6666@localhost:3306/anime-score"
-engine = create_async_engine(DATABASE_URL, echo=False)
-AsyncSessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+from models.db_model import IdLink, Score
+from models.request_model import IdRequest, TitleRequest
+from utils.database import get_db
 
 logging.basicConfig(
-    filename=config.fastapi_setting.log_file_path,
+    filename=settings.log_file_path,
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
@@ -35,24 +26,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-class TitleRequest(BaseModel):
-    title: str
-    bangumi_id: int
-
-class IdRequest(BaseModel):
-    title: str
-    myanimelist: str
-    anilist: str
-    filmarks: str
-    anikore: str
-    bangumi_id: int
-    delete_day: int
 
 async def process_title(title: TitleRequest):
     myanimelist_task = myanimelist.get_id(title.title)
@@ -101,10 +80,6 @@ async def get_score_nodb(ids: List[IdRequest]):
     ]
     results = await asyncio.gather(*tasks)
     return results
-
-async def get_db():
-    async with AsyncSessionLocal() as session:
-        yield session
 
 @app.post("/get_id")
 async def get_id(titles: List[TitleRequest], db: AsyncSession = Depends(get_db)):

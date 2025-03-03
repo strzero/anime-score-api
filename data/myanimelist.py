@@ -1,7 +1,7 @@
 import os
 import httpx
 from bs4 import BeautifulSoup
-from config import request_setting
+from config import settings
 import logging
 
 # 获取 logger 实例
@@ -14,7 +14,7 @@ async def get_id(name: str):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                search_url, headers=request_setting.real_headers, timeout=request_setting.timeout
+                search_url, headers=settings.real_headers, timeout=settings.timeout
             )
 
         soup = BeautifulSoup(response.text, "lxml")
@@ -35,7 +35,7 @@ async def get_score(local_id: str):
     score_url = f"{BASE_URL}/anime/{local_id}"
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(score_url, timeout=request_setting.timeout)
+            response = await client.get(score_url, timeout=settings.timeout)
 
         soup = BeautifulSoup(response.text, "lxml")
 

@@ -2,7 +2,7 @@ import os
 import httpx
 import logging
 from bs4 import BeautifulSoup
-from config import request_setting
+from config import settings
 
 # 获取 logger 实例
 logger = logging.getLogger(__name__)
@@ -16,8 +16,8 @@ async def get_id(name: str):
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 search_url,
-                headers=request_setting.real_headers,
-                timeout=request_setting.timeout,
+                headers=settings.real_headers,
+                timeout=settings.timeout,
                 follow_redirects=True
             )
             page = response.content
@@ -44,7 +44,7 @@ async def get_score(local_id: str):
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 score_url,
-                headers=request_setting.real_headers,
+                headers=settings.real_headers,
                 timeout=10.0,
                 follow_redirects=True
             )

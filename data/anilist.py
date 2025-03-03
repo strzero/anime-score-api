@@ -2,7 +2,7 @@ import os
 import httpx
 import json
 import logging
-from config import request_setting
+from config import settings
 
 # 获取 logger 实例
 logger = logging.getLogger(__name__)
@@ -23,7 +23,7 @@ async def get_id(name: str):
             response = await client.post(
                 BASE_URL,
                 json={"query": query, "variables": variables},
-                timeout=request_setting.timeout,
+                timeout=settings.timeout,
             )
         data = response.json().get("data", {}).get("Media", {})
         return str(data.get("id", "Error"))
@@ -58,7 +58,7 @@ async def get_score(local_id: str):
             response = await client.post(
                 BASE_URL,
                 json={"query": query, "variables": variables},
-                timeout=request_setting.timeout,
+                timeout=settings.timeout,
             )
         data = response.json().get("data", {}).get("Media", {})
 
