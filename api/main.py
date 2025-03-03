@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 
 DATABASE_URL = "mysql+aiomysql://root:so6666@localhost:3306/anime-score"
-engine = create_async_engine(DATABASE_URL, echo=False)
+engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 logging.basicConfig(
@@ -82,12 +82,6 @@ async def process_id_request(id_req: IdRequest):
         "anikore": await anikore.get_score(id_req.anikore),
     }
 
-async def run_tasks_with_delay(tasks):
-    results = []
-    for task in tasks:
-        results.append(task)
-    return await asyncio.gather(*results)
-
 @app.post("/get_id_nodb")
 async def get_id_nodb(titles: List[TitleRequest]):
     logger.info(f"尝试从网页获取ID数据： {[title.title for title in titles]}")
@@ -95,7 +89,8 @@ async def get_id_nodb(titles: List[TitleRequest]):
         asyncio.create_task(process_title(title), name=f"get_id:{title.bangumi_id}")
         for title in titles
     ]
-    return await run_tasks_with_delay(tasks)
+    results = await asyncio.gather(*tasks)
+    return results
 
 @app.post("/get_score_nodb")
 async def get_score_nodb(ids: List[IdRequest]):
@@ -104,7 +99,8 @@ async def get_score_nodb(ids: List[IdRequest]):
         asyncio.create_task(process_id_request(id_req), name=f"get_score:{id_req.bangumi_id}")
         for id_req in ids
     ]
-    return await run_tasks_with_delay(tasks)
+    results = await asyncio.gather(*tasks)
+    return results
 
 async def get_db():
     async with AsyncSessionLocal() as session:
