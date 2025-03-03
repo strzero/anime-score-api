@@ -1,8 +1,11 @@
 import os
 import httpx
+import logging
 from bs4 import BeautifulSoup
 from config import request_setting
-from utils.error import error_report
+
+# 获取 logger 实例
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.anikore.jp"
 
@@ -14,19 +17,17 @@ async def get_id(name: str):
                 search_url,
                 headers=request_setting.real_headers,
                 timeout=request_setting.timeout,
-                follow_redirects = True
+                follow_redirects=True
             )
             page = response.content
 
         soup = BeautifulSoup(page, "lxml")
 
-        id_url = soup.find("div", attrs={"class": "l-searchPageRanking_unit"}).a[
-            "href"
-        ]
+        id_url = soup.find("div", attrs={"class": "l-searchPageRanking_unit"}).a["href"]
         ani_id = id_url[7: len(id_url) - 1]
         return ani_id
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -40,7 +41,7 @@ async def get_score(local_id: str):
                 score_url,
                 headers=request_setting.real_headers,
                 timeout=10.0,
-                follow_redirects = True
+                follow_redirects=True
             )
             page = response.content
 
@@ -68,5 +69,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
         return "Error"

@@ -2,7 +2,10 @@ import os
 import httpx
 from bs4 import BeautifulSoup
 from config import request_setting
-from utils.error import error_report
+import logging
+
+# 获取 logger 实例
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://myanimelist.net"
 
@@ -18,10 +21,11 @@ async def get_id(name: str):
         anime_link = soup.select_one("div.title a.hoverinfo_trigger")
 
         if not anime_link:
+            logger.error(f"No anime link found for the name: {name}")
             return "Error"
         return anime_link["id"][18: len(anime_link["id"])]
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -46,5 +50,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
         return "Error"

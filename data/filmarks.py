@@ -2,9 +2,12 @@ import os
 import re
 import httpx
 import json
+import logging
 from bs4 import BeautifulSoup
 from config import request_setting
-from utils.error import error_report
+
+# 获取 logger 实例
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://filmarks.com"
 
@@ -20,6 +23,7 @@ async def get_id(name: str):
         js_cassette_element = soup.select_one(".p-contents-grid .js-cassette")
 
         if not js_cassette_element:
+            logger.error(f"No cassette element found for search: {name}")
             return "Error"
 
         data = json.loads(js_cassette_element.get("data-mark", "{}"))
@@ -28,7 +32,7 @@ async def get_id(name: str):
 
         return f"{anime_series_id}/{anime_season_id}" if anime_series_id and anime_season_id else "Error"
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -64,5 +68,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
         return "Error"

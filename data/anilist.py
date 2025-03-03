@@ -1,8 +1,11 @@
 import os
 import httpx
 import json
+import logging
 from config import request_setting
-from utils.error import error_report
+
+# 获取 logger 实例
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://graphql.anilist.co"
 
@@ -25,7 +28,7 @@ async def get_id(name: str):
         data = response.json().get("data", {}).get("Media", {})
         return str(data.get("id", "Error"))
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -59,7 +62,11 @@ async def get_score(local_id: str):
             )
         data = response.json().get("data", {}).get("Media", {})
 
-        title = data.get("title", {}).get("english") or data.get("title", {}).get("native") or data.get("title", {}).get("romaji", "Unknown Title")
+        title = (
+            data.get("title", {}).get("english") or
+            data.get("title", {}).get("native") or
+            data.get("title", {}).get("romaji", "Unknown Title")
+        )
         score = (data.get("averageScore", -1) / 10) if data.get("averageScore") is not None else -1
         count = sum(item["amount"] for item in data.get("stats", {}).get("scoreDistribution", []))
         return {
@@ -69,5 +76,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        error_report(e, os.path.abspath(__file__))
+        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
         return "Error"
