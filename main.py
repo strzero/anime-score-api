@@ -9,7 +9,7 @@ import asyncio
 import logging
 
 from config import settings
-from data import myanimelist, anilist, filmarks, anikore
+from apis import myanimelist, anilist, filmarks, anikore
 from models.db_model import IdLink, Score
 from models.request_model import IdRequest, TitleRequest
 from utils.database import get_db
@@ -221,14 +221,8 @@ async def get_score(ids: List[IdRequest], db: AsyncSession = Depends(get_db)):
 
     return results
 
-@app.get("/task_status")
-async def task_status():
-    tasks = asyncio.all_tasks()
-    filtered_tasks = [task for task in tasks if task.get_name().startswith("get")]
-    return [{"name": task.get_name(), "done": task.done()} for task in filtered_tasks]
 
 clients = []
-
 @app.websocket("/ws/task_status")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
