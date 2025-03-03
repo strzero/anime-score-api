@@ -23,7 +23,7 @@ async def get_id(name: str):
         js_cassette_element = soup.select_one(".p-contents-grid .js-cassette")
 
         if not js_cassette_element:
-            logger.error(f"No cassette element found for search: {name}")
+            logger.error(f"未搜索到动画 {name}")
             return "Error"
 
         data = json.loads(js_cassette_element.get("data-mark", "{}"))
@@ -32,7 +32,7 @@ async def get_id(name: str):
 
         return f"{anime_series_id}/{anime_season_id}" if anime_series_id and anime_season_id else "Error"
     except Exception as e:
-        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
+        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -68,5 +68,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
         return "Error"

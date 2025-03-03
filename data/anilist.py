@@ -28,7 +28,7 @@ async def get_id(name: str):
         data = response.json().get("data", {}).get("Media", {})
         return str(data.get("id", "Error"))
     except Exception as e:
-        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
+        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -76,5 +76,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
         return "Error"

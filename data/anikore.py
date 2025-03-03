@@ -24,11 +24,15 @@ async def get_id(name: str):
 
         soup = BeautifulSoup(page, "lxml")
 
-        id_url = soup.find("div", attrs={"class": "l-searchPageRanking_unit"}).a["href"]
+        id_url = soup.find("div", attrs={"class": "l-searchPageRanking_unit"})
+        if not id_url:
+            logger.error(f"未搜索到动画: {name}")
+            return "Error"
+        id_url = id_url.a["href"]
         ani_id = id_url[7: len(id_url) - 1]
         return ani_id
     except Exception as e:
-        logger.error(f"Error occurred while getting ID for {name}: {e}", exc_info=True)
+        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
         return "Error"
 
 async def get_score(local_id: str):
@@ -70,5 +74,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"Error occurred while getting score for ID {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
         return "Error"

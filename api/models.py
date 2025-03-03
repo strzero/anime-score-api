@@ -11,7 +11,7 @@ class IdLink(Base):
     filmarks_id = Column(String)
     anikore_id = Column(String)
     user_add = Column(TINYINT)
-
+    verification_count = Column(Integer)
 
 class Score(Base):
     __tablename__ = 'score'

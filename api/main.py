@@ -13,6 +13,8 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound
 from config.db_setting import AsyncSessionLocal
 from models import IdLink, Score
+from fastapi import WebSocket, WebSocketDisconnect
+import asyncio
 
 # 设置日志记录
 log_file_path = "logs.log"  # 或者从 config.fastapi_setting 导入
@@ -77,20 +79,26 @@ async def process_id_request(id_req: IdRequest):
 async def run_tasks_with_delay(tasks):
     results = []
     for task in tasks:
-        results.append(asyncio.create_task(task))  # 启动任务但不等待
-        await asyncio.sleep(1)  # 每秒启动一个新任务
+        results.append(task)  # 任务已经在外部创建
+        # await asyncio.sleep(1)  # 每秒启动一个新任务
     return await asyncio.gather(*results)
 
 @app.post("/get_id_nodb")
 async def get_id_nodb(titles: List[TitleRequest]):
     logger.info(f"Received titles for ID processing: {[title.title for title in titles]}")
-    tasks = [process_title(title) for title in titles]
+    tasks = [
+        asyncio.create_task(process_title(title), name=f"get_id:{title.bangumi_id}")
+        for title in titles
+    ]
     return await run_tasks_with_delay(tasks)
 
 @app.post("/get_score_nodb")
 async def get_score_nodb(ids: List[IdRequest]):
     logger.info(f"Received IDs for score processing: {[id_req.title for id_req in ids]}")
-    tasks = [process_id_request(id_req) for id_req in ids]
+    tasks = [
+        asyncio.create_task(process_id_request(id_req), name=f"get_score:{id_req.bangumi_id}")
+        for id_req in ids
+    ]
     return await run_tasks_with_delay(tasks)
 
 async def get_db():
@@ -133,7 +141,8 @@ async def get_id(titles: List[TitleRequest], db: AsyncSession = Depends(get_db))
                 anilist_id=api_result[0]['anilist'],
                 filmarks_id=api_result[0]['filmarks'],
                 anikore_id=api_result[0]['anikore'],
-                user_add=0  # Ensure user_add is set to 0 for new records
+                user_add=0,
+                verification_count=0
             )
             db.add(new_record)
             await db.commit()
@@ -229,6 +238,48 @@ async def get_score(ids: List[IdRequest], db: AsyncSession = Depends(get_db)):
             results.append(result)
 
     return results
+
+@app.get("/task_status")
+async def tasks_starting_with_get():
+    tasks = asyncio.all_tasks()
+    filtered_tasks = [task for task in tasks if task.get_name().startswith("get")]
+    return [{"name": task.get_name(), "done": task.done()} for task in filtered_tasks]
+
+
+clients = []
+
+
+@app.websocket("/ws/task_status")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    clients.append(websocket)
+
+    try:
+        while True:
+            await asyncio.sleep(1)  # 每秒钟推送一次更新信息
+
+            # 获取所有任务
+            tasks = asyncio.all_tasks()
+
+            # 筛选出name以"get"开头的任务
+            filtered_tasks = [
+                task for task in tasks if task.get_name().startswith("get")
+            ]
+
+            # 获取任务数量
+            filtered_task_count = len(filtered_tasks)
+
+            # 任务信息
+            task_status = [{"name": task.get_name(), "done": task.done()} for task in filtered_tasks]
+
+            # 向 WebSocket 客户端推送筛选后的任务状态以及数量
+            await websocket.send_json({
+                "task_status": task_status,
+                "get_task_count": filtered_task_count
+            })
+
+    except WebSocketDisconnect:
+        clients.remove(websocket)
 
 if __name__ == "__main__":
     import uvicorn
