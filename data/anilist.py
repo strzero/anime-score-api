@@ -70,7 +70,7 @@ async def get_score(local_id: str):
         score = (data.get("averageScore", -1) / 10) if data.get("averageScore") is not None else -1
         count = sum(item["amount"] for item in data.get("stats", {}).get("scoreDistribution", []))
         return {
-            "title": title,
+            "name": title,
             "score": score,
             "count": count,
             "id": local_id,

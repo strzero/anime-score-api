@@ -11,7 +11,8 @@ BASE_URL = "https://www.anikore.jp"
 
 async def get_id(name: str):
     try:
-        search_url = BASE_URL + "/anime_title/" + name
+        # search_url = BASE_URL + "/anime_title/" + name
+        search_url = f"{BASE_URL}/anime_title/{name.replace(' ', '+')}/"
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 search_url,
@@ -63,7 +64,7 @@ async def get_score(local_id: str):
         count = count_span.get_text(strip=True) if count_span else "0"
 
         return {
-            "title": title,
+            "name": title,
             "score": score,
             "count": int(count),
             "id": local_id,

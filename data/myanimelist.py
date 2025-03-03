@@ -44,7 +44,7 @@ async def get_score(local_id: str):
         count = soup.select_one("span[itemprop='ratingCount']")
 
         return {
-            "title": title.get_text(strip=True) if title else "Unknown Title",
+            "name": title.get_text(strip=True) if title else "Unknown Title",
             "score": float(score.get_text(strip=True)) if score and score.get_text(strip=True) != "N/A" else -1,
             "count": int(count.get_text(strip=True)) if count else 0,
             "id": local_id,

@@ -62,7 +62,7 @@ async def get_score(local_id: str):
                 count = int(match.group(1))
 
         return {
-            "title": title,
+            "name": title,
             "score": score,
             "count": count,
             "id": local_id,
