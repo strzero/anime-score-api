@@ -5,25 +5,31 @@ from fastapi import FastAPI
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
+import config.fastapi_setting
 from config.fastapi_setting import origins
 from data import myanimelist, anilist, filmarks, anikore
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound
-from config.db_setting import AsyncSessionLocal
 from models import IdLink, Score
 from fastapi import WebSocket, WebSocketDisconnect
 import asyncio
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 
-# 设置日志记录
-log_file_path = "logs.log"  # 或者从 config.fastapi_setting 导入
+DATABASE_URL = "mysql+aiomysql://root:so6666@localhost:3306/anime-score"
+engine = create_async_engine(DATABASE_URL, echo=False)
+AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+
 logging.basicConfig(
-    filename=log_file_path,
+    filename=config.fastapi_setting.log_file_path,
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
 
 app = FastAPI()
 
@@ -68,7 +74,7 @@ async def process_title(title: TitleRequest):
 
 
 async def process_id_request(id_req: IdRequest):
-    logger.info(f"Processing ID request for: {id_req.title}")
+    logger.info(f"开始执行网站爬取 {id_req.title}")
     return {
         "myanimelist": await myanimelist.get_score(id_req.myanimelist),
         "anilist": await anilist.get_score(id_req.anilist),
@@ -79,13 +85,12 @@ async def process_id_request(id_req: IdRequest):
 async def run_tasks_with_delay(tasks):
     results = []
     for task in tasks:
-        results.append(task)  # 任务已经在外部创建
-        # await asyncio.sleep(1)  # 每秒启动一个新任务
+        results.append(task)
     return await asyncio.gather(*results)
 
 @app.post("/get_id_nodb")
 async def get_id_nodb(titles: List[TitleRequest]):
-    logger.info(f"Received titles for ID processing: {[title.title for title in titles]}")
+    logger.info(f"尝试从网页获取ID数据： {[title.title for title in titles]}")
     tasks = [
         asyncio.create_task(process_title(title), name=f"get_id:{title.bangumi_id}")
         for title in titles
@@ -94,7 +99,7 @@ async def get_id_nodb(titles: List[TitleRequest]):
 
 @app.post("/get_score_nodb")
 async def get_score_nodb(ids: List[IdRequest]):
-    logger.info(f"Received IDs for score processing: {[id_req.title for id_req in ids]}")
+    logger.info(f"尝试从网页获取评分数据： {[id_req.title for id_req in ids]}")
     tasks = [
         asyncio.create_task(process_id_request(id_req), name=f"get_score:{id_req.bangumi_id}")
         for id_req in ids
@@ -107,9 +112,11 @@ async def get_db():
 
 @app.post("/get_id")
 async def get_id(titles: List[TitleRequest], db: AsyncSession = Depends(get_db)):
+    logger.info(f"尝试从数据库获取ID数据： {[title.title for title in titles]}")
     results = []
 
     for item in titles:
+        logger.info(f"尝试从数据库获取ID数据： {item.title}")
         # Check existing IDs in id_link
         stmt = select(IdLink).where(IdLink.bangumi_id == item.bangumi_id)
         result = await db.execute(stmt)
@@ -126,6 +133,7 @@ async def get_id(titles: List[TitleRequest], db: AsyncSession = Depends(get_db))
                 continue
 
         # Locking mechanism
+        logger.info(f"数据库无该条ID数据： {item.title}")
         async with db.begin_nested():
             stmt_lock = select(IdLink).where(IdLink.bangumi_id == item.bangumi_id).with_for_update()
             try:
@@ -153,9 +161,11 @@ async def get_id(titles: List[TitleRequest], db: AsyncSession = Depends(get_db))
 
 @app.post("/get_score")
 async def get_score(ids: List[IdRequest], db: AsyncSession = Depends(get_db)):
+    logger.info(f"尝试从数据库获取评分数据： {[id_req.title for id_req in ids]}")
     results = []
 
     for item in ids:
+        logger.info(f"尝试从数据库获取评分数据： {item.title}")
         # 查询 score 表中的数据
         stmt = select(Score).where(Score.bangumi_id == item.bangumi_id)
         result = await db.execute(stmt)
@@ -191,6 +201,7 @@ async def get_score(ids: List[IdRequest], db: AsyncSession = Depends(get_db)):
             continue
 
         # 加锁以避免重复请求
+        logger.info(f"数据库无该条Score数据： {item.title}")
         async with db.begin_nested():
             stmt_lock = select(Score).where(Score.bangumi_id == item.bangumi_id).with_for_update()
             try:
@@ -240,14 +251,12 @@ async def get_score(ids: List[IdRequest], db: AsyncSession = Depends(get_db)):
     return results
 
 @app.get("/task_status")
-async def tasks_starting_with_get():
+async def task_status():
     tasks = asyncio.all_tasks()
     filtered_tasks = [task for task in tasks if task.get_name().startswith("get")]
     return [{"name": task.get_name(), "done": task.done()} for task in filtered_tasks]
 
-
 clients = []
-
 
 @app.websocket("/ws/task_status")
 async def websocket_endpoint(websocket: WebSocket):
