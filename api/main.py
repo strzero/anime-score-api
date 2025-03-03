@@ -5,23 +5,23 @@ from fastapi import FastAPI
 from typing import List
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from sqlalchemy.orm import sessionmaker
 
 import config.fastapi_setting
 from config.fastapi_setting import origins
 from data import myanimelist, anilist, filmarks, anikore
 from fastapi import Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound
 from models import IdLink, Score
 from fastapi import WebSocket, WebSocketDisconnect
 import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
 
 DATABASE_URL = "mysql+aiomysql://root:so6666@localhost:3306/anime-score"
 engine = create_async_engine(DATABASE_URL, echo=False)
-AsyncSessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+AsyncSessionLocal = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 logging.basicConfig(
     filename=config.fastapi_setting.log_file_path,
