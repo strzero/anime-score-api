@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import get_data, get_data_nodb, task_status
+from routers import get_data_old, get_data_nodb, task_status
 
 app = FastAPI()
 
@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(get_data.router)
+app.include_router(get_data_old.router)
 app.include_router(get_data_nodb.router)
 app.include_router(task_status.router)
 

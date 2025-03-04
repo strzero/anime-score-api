@@ -7,7 +7,7 @@ from typing import List
 from models.db_model import IdLink, Score
 from models.request_model import IdRequest, TitleRequest
 from routers.get_data_nodb import get_id_nodb, get_score_nodb
-from utils.database import get_db
+from utils.database_old import get_db
 from utils.logger import logger
 
 router = APIRouter()
