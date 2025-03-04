@@ -33,7 +33,7 @@ app.add_middleware(
 )
 
 
-async def process_title(title: TitleRequest):
+async def get_four_id(title: TitleRequest):
     myanimelist_task = myanimelist.get_id(title.title)
     anilist_task = anilist.get_id(title.title)
     filmarks_task = filmarks.get_id(title.title)
@@ -52,33 +52,40 @@ async def process_title(title: TitleRequest):
     }
 
 
-async def process_id_request(id_req: IdRequest):
+async def get_four_score(id_req: IdRequest):
     logger.info(f"开始执行网站爬取 {id_req.title}")
+
+    myanimelist_task = myanimelist.get_score(id_req.myanimelist)
+    anilist_task = anilist.get_score(id_req.anilist)
+    filmarks_task = filmarks.get_score(id_req.filmarks)
+    anikore_task = anikore.get_score(id_req.anikore)
+
+    myanimelist_score, anilist_score, filmarks_score, anikore_score = await asyncio.gather(
+        myanimelist_task, anilist_task, filmarks_task, anikore_task
+    )
+
     return {
-        "myanimelist": await myanimelist.get_score(id_req.myanimelist),
-        "anilist": await anilist.get_score(id_req.anilist),
-        "filmarks": await filmarks.get_score(id_req.filmarks),
-        "anikore": await anikore.get_score(id_req.anikore),
+        "myanimelist": myanimelist_score,
+        "anilist": anilist_score,
+        "filmarks": filmarks_score,
+        "anikore": anikore_score,
     }
+
 
 @app.post("/get_id_nodb")
 async def get_id_nodb(titles: List[TitleRequest]):
     logger.info(f"尝试从网页获取ID数据： {[title.title for title in titles]}")
-    tasks = [
-        asyncio.create_task(process_title(title), name=f"get_id:{title.bangumi_id}")
-        for title in titles
-    ]
-    results = await asyncio.gather(*tasks)
+    results = []
+    for title in titles:
+        results.append(await get_four_id(title))
     return results
 
 @app.post("/get_score_nodb")
 async def get_score_nodb(ids: List[IdRequest]):
     logger.info(f"尝试从网页获取评分数据： {[id_req.title for id_req in ids]}")
-    tasks = [
-        asyncio.create_task(process_id_request(id_req), name=f"get_score:{id_req.bangumi_id}")
-        for id_req in ids
-    ]
-    results = await asyncio.gather(*tasks)
+    results = []
+    for id_req in ids:
+        results.append(await get_four_score(id_req))
     return results
 
 @app.post("/get_id")
