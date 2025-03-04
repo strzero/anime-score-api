@@ -112,28 +112,20 @@ async def get_id(titles: List[TitleRequest], db: AsyncSession = Depends(get_db))
 
         # Locking mechanism
         logger.info(f"数据库无该条ID数据： {item.title}")
-        async with db.begin_nested():
-            stmt_lock = select(IdLink).where(IdLink.bangumi_id == item.bangumi_id).with_for_update()
-            try:
-                await db.execute(stmt_lock)
-            except NoResultFound:
-                pass
+        api_result = await get_id_nodb([item])
+        new_record = IdLink(
+            bangumi_id=item.bangumi_id,
+            myanimelist_id=api_result[0]['myanimelist'],
+            anilist_id=api_result[0]['anilist'],
+            filmarks_id=api_result[0]['filmarks'],
+            anikore_id=api_result[0]['anikore'],
+            user_add=0,
+            verification_count=0
+        )
+        db.add(new_record)
+        await db.commit()
 
-            # Call external API using title if bangumi_id is not found
-            api_result = await get_id_nodb([item])
-            new_record = IdLink(
-                bangumi_id=item.bangumi_id,
-                myanimelist_id=api_result[0]['myanimelist'],
-                anilist_id=api_result[0]['anilist'],
-                filmarks_id=api_result[0]['filmarks'],
-                anikore_id=api_result[0]['anikore'],
-                user_add=0,
-                verification_count=0
-            )
-            db.add(new_record)
-            await db.commit()
-
-            results.append(new_record)
+        results.append(new_record)
 
     return results
 
@@ -180,51 +172,43 @@ async def get_score(ids: List[IdRequest], db: AsyncSession = Depends(get_db)):
 
         # 加锁以避免重复请求
         logger.info(f"数据库无该条Score数据： {item.title}")
-        async with db.begin_nested():
-            stmt_lock = select(Score).where(Score.bangumi_id == item.bangumi_id).with_for_update()
-            try:
-                await db.execute(stmt_lock)
-            except NoResultFound:
-                pass
+        score_data = await get_score_nodb([item])
 
-            # 调用外部 API 获取评分数据
-            score_data = await get_score_nodb([item])
+        # 获取当前时间和过期时间
+        update_time = datetime.utcnow()
+        expire_time = update_time + timedelta(days=item.delete_day)
 
-            # 获取当前时间和过期时间
-            update_time = datetime.utcnow()
-            expire_time = update_time + timedelta(days=item.delete_day)
+        # 创建新的 score 记录
+        new_record = Score(
+            bangumi_id=item.bangumi_id,
+            update_time=update_time,
+            expire_time=expire_time,
+            myanimelist_name=score_data[0]['myanimelist']['name'],
+            myanimelist_score=score_data[0]['myanimelist']['score'],
+            myanimelist_count=score_data[0]['myanimelist']['count'],
+            myanimelist_id=item.myanimelist,
+            anilist_name=score_data[0]['anilist']['name'],
+            anilist_score=score_data[0]['anilist']['score'],
+            anilist_count=score_data[0]['anilist']['count'],
+            anilist_id=item.anilist,
+            filmarks_name=score_data[0]['filmarks']['name'],
+            filmarks_score=score_data[0]['filmarks']['score'],
+            filmarks_count=score_data[0]['filmarks']['count'],
+            filmarks_id=item.filmarks,
+            anikore_name=score_data[0]['anikore']['name'],
+            anikore_score=score_data[0]['anikore']['score'],
+            anikore_count=score_data[0]['anikore']['count'],
+            anikore_id=item.anikore
+        )
 
-            # 创建新的 score 记录
-            new_record = Score(
-                bangumi_id=item.bangumi_id,
-                update_time=update_time,
-                expire_time=expire_time,
-                myanimelist_name=score_data[0]['myanimelist']['name'],
-                myanimelist_score=score_data[0]['myanimelist']['score'],
-                myanimelist_count=score_data[0]['myanimelist']['count'],
-                myanimelist_id=item.myanimelist,
-                anilist_name=score_data[0]['anilist']['name'],
-                anilist_score=score_data[0]['anilist']['score'],
-                anilist_count=score_data[0]['anilist']['count'],
-                anilist_id=item.anilist,
-                filmarks_name=score_data[0]['filmarks']['name'],
-                filmarks_score=score_data[0]['filmarks']['score'],
-                filmarks_count=score_data[0]['filmarks']['count'],
-                filmarks_id=item.filmarks,
-                anikore_name=score_data[0]['anikore']['name'],
-                anikore_score=score_data[0]['anikore']['score'],
-                anikore_count=score_data[0]['anikore']['count'],
-                anikore_id=item.anikore
-            )
+        db.add(new_record)
+        await db.commit()
 
-            db.add(new_record)
-            await db.commit()
+        result = score_data[0]
+        result.update({'update_time': update_time, 'expire_time': expire_time})
 
-            result = score_data[0]
-            result.update({'update_time': update_time, 'expire_time': expire_time})
-
-            # 添加到结果列表
-            results.append(result)
+        # 添加到结果列表
+        results.append(result)
 
     return results
 
