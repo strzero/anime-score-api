@@ -36,6 +36,7 @@ async def get_four_score(request: ScoreRequest):
     )
 
     return {
+        "title": request.title,
         "myanimelist": myanimelist_score,
         "anilist": anilist_score,
         "filmarks": filmarks_score,

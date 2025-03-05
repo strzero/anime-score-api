@@ -9,7 +9,7 @@ from services.get_web_data import get_four_id
 router = APIRouter()
 
 class Task:
-    def __init__(self, request: IdRequest):
+    def __init__(self, request: IdRequest, typ: int):
         self.request = request
         self.completed = False
         self.result = None
@@ -25,21 +25,24 @@ task_set = set()
 completed_tasks = asyncio.Queue()  # 存放已完成任务
 running_tasks = []
 
-# 任务调度器（每秒启动一个任务）
-async def task_scheduler():
-    while True:
-        task = await task_queue.get()  # 取出最早的任务
-        task_set.remove(task.request)
-        running_tasks.append(task)
-        asyncio.create_task(execute_task(task))  # 并发执行任务
-        await asyncio.sleep(settings.task_queue_interval)  # 每秒调度一次
-
 @router.post("/task/add_id")
 async def add_task(request: IdRequest):
     if request not in task_set:
         task = Task(request)
         await task_queue.put(task)
         task_set.add(request)
+
+# 任务调度器（每秒启动一个任务）
+async def task_scheduler():
+    while True:
+        if not task_queue.empty():  # 如果队列不为空
+            task = await task_queue.get()  # 取出最早的任务
+            task_set.remove(task.request)
+            running_tasks.append(task)
+            asyncio.create_task(execute_task(task))  # 并发执行任务
+            await asyncio.sleep(settings.task_queue_interval)  # 每秒调度一次
+        else:
+            await asyncio.sleep(0.1)  # 队列为空时，稍等片刻再继续检查
 
 # 任务执行逻辑
 async def execute_task(task: Task):
