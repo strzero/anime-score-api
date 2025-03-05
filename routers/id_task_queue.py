@@ -78,8 +78,7 @@ async def websocket_task_completed(websocket: WebSocket):
         await websocket.send_json({"task_title": task.request.title, "result": task.result})
 
 # 启动调度器
-@router.on_event("startup")
-async def start_scheduler():
+async def id_task_queue_start():
     asyncio.create_task(task_scheduler())
 
 @router.post("/task/clean_id")

@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
@@ -8,7 +8,12 @@ from config import settings
 from routers import get_data, id_task_queue
 from utils.logger import logger
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await id_task_queue.id_task_queue_start()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
