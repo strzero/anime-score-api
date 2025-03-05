@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 
-class TitleRequest(BaseModel):
+class IdRequest(BaseModel):
     title: str
     bangumi_id: int
 
-class IdRequest(BaseModel):
+class ScoreRequest(BaseModel):
     title: str
     myanimelist: str
     anilist: str

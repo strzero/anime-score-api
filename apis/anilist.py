@@ -1,7 +1,8 @@
-import os
-import httpx
-import json
 import logging
+
+import httpx
+from numba.cuda import local
+
 from config import settings
 
 # 获取 logger 实例
@@ -26,34 +27,39 @@ async def get_id(name: str):
                 timeout=settings.timeout,
             )
         data = response.json().get("data", {}).get("Media", {})
+        if not data:
+            return "NoFound"
         return str(data.get("id", "Error"))
     except Exception as e:
-        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
+        logger.error(f"anilist ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
 async def get_score(local_id: str):
     if local_id == "Error":
-        return "None"
+        return "Error"
+    if local_id == "NoFound":
+        return "NoFound"
 
-    query = """
-    query ($id: Int) {
-        Media (id: $id, type: ANIME) {
-            title {
-                romaji
-                english
-                native
-            }
-            averageScore
-            stats {
-                scoreDistribution {
-                    amount
+    try:
+        query = """
+        query ($id: Int) {
+            Media (id: $id, type: ANIME) {
+                title {
+                    romaji
+                    english
+                    native
+                }
+                averageScore
+                stats {
+                    scoreDistribution {
+                        amount
+                    }
                 }
             }
         }
-    }
-    """
-    variables = {"id": int(local_id)}
-    try:
+        """
+        variables = {"id": int(local_id)}
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 BASE_URL,
@@ -76,5 +82,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
         return "Error"

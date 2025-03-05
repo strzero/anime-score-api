@@ -1,8 +1,12 @@
+from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from tortoise.contrib.fastapi import register_tortoise
 
 from config import settings
-from routers import get_data_old, get_data_nodb, task_status
+from routers import get_data, id_task_queue
+from utils.logger import logger
 
 app = FastAPI()
 
@@ -14,10 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(get_data_old.router)
-app.include_router(get_data_nodb.router)
-app.include_router(task_status.router)
+register_tortoise(
+    app,
+    config=settings.DATABASE_CONFIG,
+    # add_exception_handlers=True,
+)
+
+app.include_router(get_data.router)
+app.include_router(id_task_queue.router)
+
+logger.info("\n\n\n------------------------------\n\n\n")
+logger.info("API启动:" + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)

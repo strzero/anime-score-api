@@ -1,7 +1,8 @@
-import os
-import httpx
 import logging
+
+import httpx
 from bs4 import BeautifulSoup
+
 from config import settings
 
 # 获取 logger 实例
@@ -26,20 +27,21 @@ async def get_id(name: str):
 
         id_url = soup.find("div", attrs={"class": "l-searchPageRanking_unit"})
         if not id_url:
-            logger.error(f"未搜索到动画: {name}")
-            return "Error"
+            return "NoFound"
         id_url = id_url.a["href"]
         ani_id = id_url[7: len(id_url) - 1]
         return ani_id
     except Exception as e:
-        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
+        logger.error(f"anikore ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
 async def get_score(local_id: str):
-    try:
-        if local_id == "Error":
-            return "None"
+    if local_id == "Error":
+        return "Error"
+    if local_id == "NoFound":
+        return "NoFound"
 
+    try:
         score_url = BASE_URL + "/anime/" + local_id
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -74,5 +76,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
         return "Error"

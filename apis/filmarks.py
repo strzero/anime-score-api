@@ -1,9 +1,10 @@
-import os
-import re
-import httpx
 import json
 import logging
+import re
+
+import httpx
 from bs4 import BeautifulSoup
+
 from config import settings
 
 # 获取 logger 实例
@@ -23,8 +24,7 @@ async def get_id(name: str):
         js_cassette_element = soup.select_one(".p-contents-grid .js-cassette")
 
         if not js_cassette_element:
-            logger.error(f"未搜索到动画 {name}")
-            return "Error"
+            return "NoFound"
 
         data = json.loads(js_cassette_element.get("data-mark", "{}"))
         anime_series_id = data.get("anime_series_id")
@@ -32,15 +32,18 @@ async def get_id(name: str):
 
         return f"{anime_series_id}/{anime_season_id}" if anime_series_id and anime_season_id else "Error"
     except Exception as e:
-        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
+        logger.error(f"filmarks ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
 async def get_score(local_id: str):
     if local_id == "Error":
-        return "None"
+        return "Error"
+    if local_id == "NoFound":
+        return "NoFound"
 
-    search_url = f"{BASE_URL}/animes/{local_id}"
     try:
+        search_url = f"{BASE_URL}/animes/{local_id}"
+
         async with httpx.AsyncClient() as client:
             response = await client.get(
                 search_url, headers=settings.real_headers, timeout=settings.timeout
@@ -68,5 +71,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
         return "Error"

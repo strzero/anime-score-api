@@ -1,8 +1,9 @@
-import os
+import logging
+
 import httpx
 from bs4 import BeautifulSoup
+
 from config import settings
-import logging
 
 # 获取 logger 实例
 logger = logging.getLogger(__name__)
@@ -21,19 +22,21 @@ async def get_id(name: str):
         anime_link = soup.select_one("div.title a.hoverinfo_trigger")
 
         if not anime_link:
-            logger.error(f"未搜索到动画: {name}")
-            return "Error"
+            return "NoFound"
         return anime_link["id"][18: len(anime_link["id"])]
     except Exception as e:
-        logger.error(f"动画检索ID中错误 {name}: {e}", exc_info=True)
+        logger.error(f"myanimelist ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
 async def get_score(local_id: str):
     if local_id == "Error":
-        return "None"
+        return "Error"
+    if local_id == "NoFound":
+        return "NoFound"
 
-    score_url = f"{BASE_URL}/anime/{local_id}"
     try:
+        score_url = f"{BASE_URL}/anime/{local_id}"
+
         async with httpx.AsyncClient() as client:
             response = await client.get(score_url, timeout=settings.timeout)
 
@@ -50,5 +53,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"动画检索分数中错误 {local_id}: {e}", exc_info=True)
+        logger.error(f"动画检索分数错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
         return "Error"
