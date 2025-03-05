@@ -4,6 +4,7 @@ from xmlrpc.client import Boolean
 from fastapi import FastAPI, WebSocket, APIRouter
 from asyncio import Queue
 
+from config import settings
 from models.request_model import IdRequest
 from services.get_web_data import get_four_id
 
@@ -22,22 +23,25 @@ class Task:
 
 # 任务管理
 task_queue = asyncio.Queue()  # 存放待执行任务
+task_set = set()
 completed_tasks = asyncio.Queue()  # 存放已完成任务
 running_tasks = []
-task_id_counter = 0  # 任务 ID 计数器
 
 # 任务调度器（每秒启动一个任务）
 async def task_scheduler():
     while True:
         task = await task_queue.get()  # 取出最早的任务
+        task_set.remove(task.request)
         running_tasks.append(task)
         asyncio.create_task(execute_task(task))  # 并发执行任务
-        await asyncio.sleep(5)  # 每秒调度一次
+        await asyncio.sleep(settings.task_queue_interval)  # 每秒调度一次
 
 @router.post("/task/add_id")
 async def add_task(request: IdRequest):
-    task = Task(request)
-    await task_queue.put(task)
+    if request not in task_set:
+        task = Task(request)
+        await task_queue.put(task)
+        task_set.add(request)
 
 # 任务执行逻辑
 async def execute_task(task: Task):
@@ -79,3 +83,9 @@ async def websocket_task_completed(websocket: WebSocket):
 @router.on_event("startup")
 async def start_scheduler():
     asyncio.create_task(task_scheduler())
+
+@router.post("/task/clean_id")
+async def clean_id(request: IdRequest):
+    while not task_queue.empty():
+        await task_queue.get()
+    return "已清空"

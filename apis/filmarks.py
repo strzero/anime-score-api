@@ -6,6 +6,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from config import settings
+from utils.client import client
 
 # 获取 logger 实例
 logger = logging.getLogger(__name__)
@@ -15,10 +16,9 @@ BASE_URL = "https://filmarks.com"
 async def get_id(name: str):
     search_url = f"{BASE_URL}/search/animes?q={name}"
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                search_url, headers=settings.real_headers, timeout=settings.timeout
-            )
+        response = await client.get(
+            search_url, headers=settings.real_headers, timeout=settings.timeout
+        )
 
         soup = BeautifulSoup(response.text, "lxml")
         js_cassette_element = soup.select_one(".p-contents-grid .js-cassette")

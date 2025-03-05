@@ -1,3 +1,5 @@
+import random
+
 origins = [
     "http://localhost:3000"
 ]
@@ -8,7 +10,7 @@ real_headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 }
 
-timeout = 20
+timeout = 10
 
 DATABASE_CONFIG = {
     "connections": {
@@ -23,3 +25,5 @@ DATABASE_CONFIG = {
 }
 
 logger_exc_info = False
+
+task_queue_interval = 5

@@ -4,6 +4,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from config import settings
+from utils.client import client
 
 # 获取 logger 实例
 logger = logging.getLogger(__name__)
@@ -14,14 +15,13 @@ async def get_id(name: str):
     try:
         # search_url = BASE_URL + "/anime_title/" + name
         search_url = f"{BASE_URL}/anime_title/{name.replace(' ', '+')}/"
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                search_url,
-                headers=settings.real_headers,
-                timeout=settings.timeout,
-                follow_redirects=True
-            )
-            page = response.content
+        response = await client.get(
+            search_url,
+            headers=settings.real_headers,
+            timeout=settings.timeout,
+            follow_redirects=True
+        )
+        page = response.content
 
         soup = BeautifulSoup(page, "lxml")
 
