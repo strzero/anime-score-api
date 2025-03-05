@@ -1,5 +1,3 @@
-import random
-
 origins = [
     "http://localhost:3000"
 ]

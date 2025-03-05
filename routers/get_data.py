@@ -1,10 +1,8 @@
 import asyncio
 from typing import List
 
-from fastapi import HTTPException, APIRouter
-from tortoise.exceptions import DoesNotExist
+from fastapi import APIRouter
 
-from models.db_model import IdLink, IdLink_Pydantic
 from models.request_model import IdRequest, ScoreRequest
 from services.process_request import process_id, process_score
 

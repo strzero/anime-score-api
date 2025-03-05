@@ -43,14 +43,13 @@ async def get_score(local_id: str):
 
     try:
         score_url = BASE_URL + "/anime/" + local_id
-        async with httpx.AsyncClient() as client:
-            response = await client.get(
-                score_url,
-                headers=settings.real_headers,
-                timeout=10.0,
-                follow_redirects=True
-            )
-            page = response.content
+        response = await client.get(
+            score_url,
+            headers=settings.real_headers,
+            timeout=10.0,
+            follow_redirects=True
+        )
+        page = response.content
 
         soup = BeautifulSoup(page, "lxml")
 

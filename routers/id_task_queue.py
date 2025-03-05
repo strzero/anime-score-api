@@ -1,8 +1,6 @@
 import asyncio
-from xmlrpc.client import Boolean
 
-from fastapi import FastAPI, WebSocket, APIRouter
-from asyncio import Queue
+from fastapi import WebSocket, APIRouter
 
 from config import settings
 from models.request_model import IdRequest
@@ -85,7 +83,7 @@ async def start_scheduler():
     asyncio.create_task(task_scheduler())
 
 @router.post("/task/clean_id")
-async def clean_id(request: IdRequest):
+async def clean_id():
     while not task_queue.empty():
         await task_queue.get()
     return "已清空"

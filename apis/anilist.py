@@ -1,7 +1,6 @@
 import logging
 
 import httpx
-from numba.cuda import local
 
 from config import settings
 from utils.client import client
@@ -65,12 +64,11 @@ async def get_score(local_id: str):
         """
         variables = {"id": int(local_id)}
 
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                BASE_URL,
-                json={"query": query, "variables": variables},
-                timeout=settings.timeout,
-            )
+        response = await client.post(
+            BASE_URL,
+            json={"query": query, "variables": variables},
+            timeout=settings.timeout,
+        )
         data = response.json().get("data", {})
         if not data:
             logger.error("anilist API速率限制")
