@@ -5,11 +5,11 @@ class IdRequest(BaseModel):
     bangumi_id: int
 
     def __hash__(self):
-        return hash(self.bangumi_id)
+        return hash(self.bangumi_id+1)
 
     def __eq__(self, other):
         if isinstance(other, IdRequest):
-            return self.bangumi_id == other.bangumi_id
+            return self.bangumi_id+1 == other.bangumi_id+1
         return False
 
 
@@ -23,9 +23,9 @@ class ScoreRequest(BaseModel):
     delete_day: int
 
     def __hash__(self):
-        return hash(self.bangumi_id)
+        return hash(self.bangumi_id+2)
 
     def __eq__(self, other):
         if isinstance(other, IdRequest):
-            return self.bangumi_id == other.bangumi_id
+            return self.bangumi_id+2 == other.bangumi_id+2
         return False

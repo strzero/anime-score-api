@@ -1,6 +1,9 @@
 import asyncio
 
 from fastapi import WebSocket, APIRouter
+from models.request_model import ScoreRequest
+from services.task_scheduler import task_queue, task_set, task_scheduler, Task, running_tasks, \
+    completed_score_tasks
 
 from config import settings
 from models.request_model import ScoreRequest
@@ -8,76 +11,36 @@ from services.get_web_data import get_four_score
 
 router = APIRouter()
 
-class Task:
-    def __init__(self, request: ScoreRequest):
-        self.request = request
-        self.completed = False
-        self.result = None
-
-    async def run(self):
-        self.result = await get_four_score(self.request)
-        self.completed = True
-        return self
-
-# 任务管理
-task_queue = asyncio.Queue()  # 存放待执行任务
-task_set = set()
-completed_tasks = asyncio.Queue()  # 存放已完成任务
-running_tasks = []
-
 @router.post("/task/add_score")
 async def add_task(request: ScoreRequest):
-    if request not in task_set:
+    if request.bangumi_id+2 not in task_set:
         task = Task(request)
         await task_queue.put(task)
-        task_set.add(request)
+        task_set.add(request.bangumi_id+2)
 
-# 任务调度器（每秒启动一个任务）
-async def task_scheduler():
-    while True:
-        if not task_queue.empty():  # 如果队列不为空
-            task = await task_queue.get()  # 取出最早的任务
-            task_set.remove(task.request)
-            running_tasks.append(task)
-            asyncio.create_task(execute_task(task))  # 并发执行任务
-            await asyncio.sleep(settings.task_queue_interval)  # 每秒调度一次
-        else:
-            await asyncio.sleep(0.1)  # 队列为空时，稍等片刻再继续检查
 
-# 任务执行逻辑
-async def execute_task(task: Task):
-    result = await task.run()
-    running_tasks.remove(task)
-    await completed_tasks.put(result)  # 任务完成后放入完成队列
-
-# WebSocket 1：仅在任务队列非空时发送
 @router.websocket("/ws/score/tasks")
 async def websocket_tasks(websocket: WebSocket):
     await websocket.accept()
-    have_data = False
     while True:
-        tasks = list(task_queue._queue) + running_tasks
-        if tasks:
-            have_data = True
+        # 筛选出队列中所有任务类型为 ScoreRequest 的任务
+        tasks = [task for task in task_queue._queue if isinstance(task.request, ScoreRequest)] + \
+                [task for task in running_tasks if isinstance(task.request, ScoreRequest)]
 
-        if have_data:
+        if tasks:
             task_data = [
                 {"title": task.request.title, "status": "pending" if task in task_queue._queue else "running"}
                 for task in tasks
             ]
             await websocket.send_json(task_data)
 
-        if not tasks:
-            have_data = False
-
         await asyncio.sleep(1)
 
-# WebSocket 2：推送已完成任务
 @router.websocket("/ws/score/task_completed")
 async def websocket_task_completed(websocket: WebSocket):
     await websocket.accept()
     while True:
-        task = await completed_tasks.get()  # 获取完成的任务
+        task = await completed_score_tasks.get()  # 从专用队列中获取完成的 ScoreRequest 任务
         await websocket.send_json({"task_title": task.request.title, "result": task.result})
 
 # 启动调度器

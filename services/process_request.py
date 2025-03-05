@@ -10,8 +10,8 @@ async def process_id(request: IdRequest):
         db_res = await check_database_id(request)
         return db_res
     except DoesNotExist:
-        logger.info(request.title + ":数据库未检索到")
-        return "Not Found"
+
+        return "检索中"
 
 
 async def process_score(request: ScoreRequest):
