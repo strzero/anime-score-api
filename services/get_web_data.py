@@ -16,6 +16,7 @@ async def get_four_id(request: IdRequest):
 
     return {
         "title": request.title,
+        "bangumi_id": request.bangumi_id,
         "myanimelist": myanimelist_id,
         "anilist": anilist_id,
         "filmarks": filmarks_id,
@@ -37,6 +38,8 @@ async def get_four_score(request: ScoreRequest):
 
     return {
         "title": request.title,
+        "bangumi_id": request.bangumi_id,
+        "delete_day": request.delete_day,
         "myanimelist": myanimelist_score,
         "anilist": anilist_score,
         "filmarks": filmarks_score,

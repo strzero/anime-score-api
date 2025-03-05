@@ -7,7 +7,7 @@ from services.task_scheduler import task_queue, task_set, task_scheduler, Task, 
 router = APIRouter()
 
 @router.post("/task/add_id")
-async def add_task(request: IdRequest):
+async def add_id_task(request: IdRequest):
     if request.bangumi_id+1 not in task_set:
         task = Task(request)
         await task_queue.put(task)
@@ -16,19 +16,22 @@ async def add_task(request: IdRequest):
 @router.websocket("/ws/id/tasks")
 async def websocket_tasks(websocket: WebSocket):
     await websocket.accept()
+    last_sent_tasks = None  # 记录上一次发送的数据
     while True:
-        # 筛选出队列中所有任务类型为 IdRequest 的任务
         tasks = [task for task in task_queue._queue if isinstance(task.request, IdRequest)] + \
                 [task for task in running_tasks if isinstance(task.request, IdRequest)]
 
-        if tasks:
-            task_data = [
-                {"title": task.request.title, "status": "pending" if task in task_queue._queue else "running"}
-                for task in tasks
-            ]
+        task_data = [
+            {"title": task.request.title, "status": "pending" if task in task_queue._queue else "running"}
+            for task in tasks
+        ]
+
+        if task_data != last_sent_tasks:  # 只有任务状态变化时才发送数据
             await websocket.send_json(task_data)
+            last_sent_tasks = task_data
 
         await asyncio.sleep(1)
+
 
 @router.websocket("/ws/id/task_completed")
 async def websocket_task_completed(websocket: WebSocket):

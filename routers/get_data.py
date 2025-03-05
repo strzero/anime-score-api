@@ -21,6 +21,5 @@ async def get_id(requests: List[ScoreRequest]):
     tasks = []
     for request in requests:
         tasks.append(process_score(request))
-    await asyncio.gather(*tasks)
 
-    return requests[0].title
+    return await asyncio.gather(*tasks)

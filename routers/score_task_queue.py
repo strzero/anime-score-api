@@ -12,7 +12,7 @@ from services.get_web_data import get_four_score
 router = APIRouter()
 
 @router.post("/task/add_score")
-async def add_task(request: ScoreRequest):
+async def add_score_task(request: ScoreRequest):
     if request.bangumi_id+2 not in task_set:
         task = Task(request)
         await task_queue.put(task)
@@ -22,19 +22,22 @@ async def add_task(request: ScoreRequest):
 @router.websocket("/ws/score/tasks")
 async def websocket_tasks(websocket: WebSocket):
     await websocket.accept()
+    last_sent_tasks = None  # 记录上一次发送的数据
     while True:
-        # 筛选出队列中所有任务类型为 ScoreRequest 的任务
         tasks = [task for task in task_queue._queue if isinstance(task.request, ScoreRequest)] + \
                 [task for task in running_tasks if isinstance(task.request, ScoreRequest)]
 
-        if tasks:
-            task_data = [
-                {"title": task.request.title, "status": "pending" if task in task_queue._queue else "running"}
-                for task in tasks
-            ]
+        task_data = [
+            {"title": task.request.title, "status": "pending" if task in task_queue._queue else "running"}
+            for task in tasks
+        ]
+
+        if task_data != last_sent_tasks:  # 只有任务状态变化时才发送数据
             await websocket.send_json(task_data)
+            last_sent_tasks = task_data
 
         await asyncio.sleep(1)
+
 
 @router.websocket("/ws/score/task_completed")
 async def websocket_task_completed(websocket: WebSocket):

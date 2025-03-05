@@ -1,7 +1,9 @@
 from tortoise.exceptions import DoesNotExist
 
 from models.request_model import IdRequest, ScoreRequest
-from services.check_database import check_database_id
+from routers.id_task_queue import add_id_task
+from routers.score_task_queue import add_score_task
+from services.check_database import check_database_id, check_database_score
 from utils.logger import logger
 
 
@@ -10,9 +12,14 @@ async def process_id(request: IdRequest):
         db_res = await check_database_id(request)
         return db_res
     except DoesNotExist:
-
-        return "检索中"
+        await add_id_task(request)
+        return 901
 
 
 async def process_score(request: ScoreRequest):
-    return None
+    try:
+        db_res = await check_database_score(request)
+        return db_res
+    except DoesNotExist:
+        await add_score_task(request)
+        return 901
