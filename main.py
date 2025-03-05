@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 
 from config import settings
-from routers import get_data, id_task_queue, score_task_queue
+from routers import get_data, id_task_queue, score_task_queue, bangumi
 from utils.logger import logger
 
 @asynccontextmanager
@@ -33,6 +33,7 @@ register_tortoise(
 app.include_router(get_data.router)
 app.include_router(id_task_queue.router)
 app.include_router(score_task_queue.router)
+app.include_router(bangumi.router)
 
 logger.info("\n\n\n------------------------------\n\n\n")
 logger.info("API启动:" + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

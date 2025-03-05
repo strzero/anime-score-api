@@ -1,3 +1,4 @@
+from sympy.printing.codeprinter import requires
 from tortoise.exceptions import DoesNotExist
 
 from models.request_model import IdRequest, ScoreRequest

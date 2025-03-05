@@ -10,6 +10,9 @@ async def save_id_db(id_data):
     filmarks_id = id_data.get('filmarks')
     anikore_id = id_data.get('anikore')
 
+    if any(value == 'Error' for value in [myanimelist_id, anilist_id, filmarks_id, anikore_id]):
+        return
+
     try:
         # 尝试查找是否已存在该 bangumi_id 的记录
         id_link, created = await IdLink.get_or_create(bangumi_id=bangumi_id)
@@ -46,6 +49,9 @@ async def save_score_db(score_data):
     anilist = score_data.get('anilist')
     filmarks = score_data.get('filmarks')
     anikore = score_data.get('anikore')
+
+    if any(value == 'Error' for value in [myanimelist, anilist, filmarks, anikore]):
+        return
 
     # 当前时间作为 update_time
     update_time = datetime.now()

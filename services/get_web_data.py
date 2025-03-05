@@ -27,10 +27,10 @@ async def get_four_id(request: IdRequest):
 async def get_four_score(request: ScoreRequest):
     logger.info(f"开始执行网站爬取 {request.title}")
 
-    myanimelist_task = myanimelist.get_score(request.myanimelist)
-    anilist_task = anilist.get_score(request.anilist)
-    filmarks_task = filmarks.get_score(request.filmarks)
-    anikore_task = anikore.get_score(request.anikore)
+    myanimelist_task = myanimelist.get_score(request.myanimelist_id)
+    anilist_task = anilist.get_score(request.anilist_id)
+    filmarks_task = filmarks.get_score(request.filmarks_id)
+    anikore_task = anikore.get_score(request.anikore_id)
 
     myanimelist_score, anilist_score, filmarks_score, anikore_score = await asyncio.gather(
         myanimelist_task, anilist_task, filmarks_task, anikore_task

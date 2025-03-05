@@ -14,13 +14,13 @@ class IdRequest(BaseModel):
 
 
 class ScoreRequest(BaseModel):
-    title: str
-    myanimelist: str
-    anilist: str
-    filmarks: str
-    anikore: str
+    title: str = "NoSetTitle"
+    myanimelist_id: str
+    anilist_id: str
+    filmarks_id: str
+    anikore_id: str
     bangumi_id: int
-    delete_day: int
+    delete_day: int = 7
 
     def __hash__(self):
         return hash(self.bangumi_id+2)
