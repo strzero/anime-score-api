@@ -1,5 +1,5 @@
 import asyncio
-from typing import List
+from typing import List, Union, Dict
 
 from fastapi import APIRouter
 from uuid import UUID
@@ -10,18 +10,20 @@ from services.process_request import process_id, process_score
 
 router = APIRouter()
 
-@router.post("/get_id")
+@router.post("/get_id", response_model=Dict[int, Union[IdLink_Pydantic, UUID]])
 async def get_id(requests: List[IdRequest]):
     tasks = []
     for request in requests:
         tasks.append(process_id(request))
 
-    return await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
+    return {request.bangumi_id: result for request, result in zip(requests, results)}
 
-@router.post("/get_score")
+@router.post("/get_score", response_model=Dict[int, Union[Score_Pydantic, UUID]])
 async def get_id(requests: List[ScoreRequest]):
     tasks = []
     for request in requests:
         tasks.append(process_score(request))
 
-    return await asyncio.gather(*tasks)
+    results = await asyncio.gather(*tasks)
+    return {request.bangumi_id: result for request, result in zip(requests, results)}

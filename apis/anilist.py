@@ -42,7 +42,7 @@ async def get_score(local_id: str):
     if local_id == "Error":
         return "Error"
     if local_id == "NoFound":
-        return "NoFound"
+        return "NoInput"
 
     try:
         query = """

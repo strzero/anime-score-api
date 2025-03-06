@@ -5,10 +5,10 @@ from datetime import datetime, timedelta
 async def save_id_db(id_data):
     # 提取 id_data 中的各个字段
     bangumi_id = id_data.get('bangumi_id')
-    myanimelist_id = id_data.get('myanimelist')
-    anilist_id = id_data.get('anilist')
-    filmarks_id = id_data.get('filmarks')
-    anikore_id = id_data.get('anikore')
+    myanimelist_id = id_data.get('myanimelist_id')
+    anilist_id = id_data.get('anilist_id')
+    filmarks_id = id_data.get('filmarks_id')
+    anikore_id = id_data.get('anikore_id')
 
     if any(value == 'Error' for value in [myanimelist_id, anilist_id, filmarks_id, anikore_id]):
         return
@@ -51,6 +51,8 @@ async def save_score_db(score_data):
     anikore = score_data.get('anikore')
 
     if any(value == 'Error' for value in [myanimelist, anilist, filmarks, anikore]):
+        return
+    if any(value == 'NoInput' for value in [myanimelist, anilist, filmarks, anikore]):
         return
 
     # 当前时间作为 update_time
