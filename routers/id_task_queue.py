@@ -1,17 +1,25 @@
 import asyncio
+import uuid
+from uuid import UUID
+
 from fastapi import APIRouter, WebSocket
 from models.request_model import IdRequest
-from services.task_scheduler import task_queue, task_set, task_scheduler, Task, running_tasks, \
-    completed_id_tasks
+from services.task_scheduler import task_queue, task_scheduler, Task, running_tasks, \
+    completed_id_tasks, bgmid_to_uuid_getid
+from utils.logger import logger
 
 router = APIRouter()
 
 @router.post("/task/add_id")
-async def add_id_task(request: IdRequest):
-    if request.bangumi_id+1 not in task_set:
-        task = Task(request)
+async def add_id_task(request: IdRequest, task_id: UUID = uuid.uuid4()):
+    bangumi_id = request.bangumi_id
+    if not bangumi_id in bgmid_to_uuid_getid:
+        task = Task(request, task_id)
+        bgmid_to_uuid_getid[bangumi_id] = [task_id, 1]
         await task_queue.put(task)
-        task_set.add(request.bangumi_id+1)
+    else:
+        bgmid_to_uuid_getid[bangumi_id][1] += 1
+    return task_id
 
 @router.websocket("/ws/id/tasks")
 async def websocket_tasks(websocket: WebSocket):

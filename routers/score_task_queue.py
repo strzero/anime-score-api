@@ -1,9 +1,11 @@
 import asyncio
+import uuid
+from uuid import UUID
 
 from fastapi import WebSocket, APIRouter
 from models.request_model import ScoreRequest
-from services.task_scheduler import task_queue, task_set, task_scheduler, Task, running_tasks, \
-    completed_score_tasks
+from services.task_scheduler import task_queue, task_scheduler, Task, running_tasks, \
+    completed_score_tasks, bgmid_to_uuid_getscore
 
 from config import settings
 from models.request_model import ScoreRequest
@@ -12,11 +14,15 @@ from services.get_web_data import get_four_score
 router = APIRouter()
 
 @router.post("/task/add_score")
-async def add_score_task(request: ScoreRequest):
-    if request.bangumi_id+2 not in task_set:
-        task = Task(request)
+async def add_score_task(request: ScoreRequest, task_id: UUID = uuid.uuid4()):
+    bangumi_id = request.bangumi_id
+    if not bangumi_id in bgmid_to_uuid_getscore:
+        task = Task(request, task_id)
+        bgmid_to_uuid_getscore[bangumi_id] = [task_id, 1]
         await task_queue.put(task)
-        task_set.add(request.bangumi_id+2)
+    else:
+        bgmid_to_uuid_getscore[bangumi_id][1] += 1
+    return task_id
 
 
 @router.websocket("/ws/score/tasks")
