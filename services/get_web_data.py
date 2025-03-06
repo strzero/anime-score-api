@@ -27,7 +27,6 @@ async def get_four_id(request: IdRequest):
 
 
 async def get_four_score(request: ScoreRequest):
-    logger.info(f"开始执行网站爬取 {request.title}")
 
     myanimelist_task = myanimelist.get_score(request.myanimelist_id)
     anilist_task = anilist.get_score(request.anilist_id)

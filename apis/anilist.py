@@ -91,5 +91,5 @@ async def get_score(local_id: str):
             "id": local_id,
         }
     except Exception as e:
-        logger.error(f"动画检索分数错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
+        logger.error(f"anilist Score错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
         return "Error"

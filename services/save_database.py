@@ -45,15 +45,15 @@ async def save_score_db(score_data):
     bangumi_id = score_data.get('bangumi_id')
     delete_day = int(score_data.get('delete_day'))
 
-    myanimelist = score_data.get('myanimelist')
-    anilist = score_data.get('anilist')
-    filmarks = score_data.get('filmarks')
-    anikore = score_data.get('anikore')
+    myanimelist = score_data.get('myanimelist') if isinstance(score_data.get('myanimelist'), dict) else {}
+    anilist = score_data.get('anilist') if isinstance(score_data.get('anilist'), dict) else {}
+    filmarks = score_data.get('filmarks') if isinstance(score_data.get('filmarks'), dict) else {}
+    anikore = score_data.get('anikore') if isinstance(score_data.get('anikore'), dict) else {}
 
     if any(value == 'Error' for value in [myanimelist, anilist, filmarks, anikore]):
         return
-    if any(value == 'NoInput' for value in [myanimelist, anilist, filmarks, anikore]):
-        return
+    # if any(value == 'NoInput' for value in [myanimelist, anilist, filmarks, anikore]):
+    #     return
 
     # 当前时间作为 update_time
     update_time = datetime.now()

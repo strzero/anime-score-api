@@ -89,11 +89,13 @@ BangumiDataIn_Pydantic = pydantic_model_creator(BangumiData, name="BangumiDataIn
 
 
 class BangumiTags(models.Model):
-    bangumi_id = fields.IntField()
+    bangumi_id = fields.IntField(pk=True)
     tag = fields.CharField(max_length=255)
 
+    # 定义复合主键
     class Meta:
         table = "bangumi_tags"
+        unique_together = ('bangumi_id', 'tag')
 
     def __str__(self):
         return f"BangumiTags(bangumi_id={self.bangumi_id}, tag={self.tag})"

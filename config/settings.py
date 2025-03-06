@@ -22,6 +22,6 @@ DATABASE_CONFIG = {
     }
 }
 
-logger_exc_info = False
+logger_exc_info = True
 
 task_queue_interval = 5

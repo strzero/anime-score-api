@@ -30,7 +30,6 @@ class Task:
             bgmid_to_uuid_getid.pop(self.request.bangumi_id, '')
         self.completed = True
         task_results[self.uuid] = self.result
-        logger.info(task_results)
         return self
 
 # 任务调度器（每秒启动一个任务）
