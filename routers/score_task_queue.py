@@ -13,7 +13,7 @@ from services.webdata_get import get_four_score
 
 router = APIRouter()
 
-@router.post("/task/add_score")
+# @router.post("/task/add_score")
 async def add_score_task(request: ScoreRequest, task_id: UUID = uuid.uuid4()):
     bangumi_id = request.bangumi_id
     if not bangumi_id in bgmid_to_uuid_getscore:
@@ -56,7 +56,7 @@ async def websocket_task_completed(websocket: WebSocket):
 async def score_task_queue_start():
     asyncio.create_task(task_scheduler())
 
-@router.post("/task/clean_score")
+# @router.post("/task/clean_score")
 async def clean_id():
     while not task_queue.empty():
         await task_queue.get()

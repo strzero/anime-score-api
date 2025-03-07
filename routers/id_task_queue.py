@@ -10,7 +10,7 @@ from utils.logger import logger
 
 router = APIRouter()
 
-@router.post("/task/add_id")
+# @router.post("/task/add_id")
 async def add_id_task(request: IdRequest, task_id: UUID = uuid.uuid4()):
     bangumi_id = request.bangumi_id
     if not bangumi_id in bgmid_to_uuid_getid:
@@ -52,7 +52,7 @@ async def websocket_task_completed(websocket: WebSocket):
 async def id_task_queue_start():
     asyncio.create_task(task_scheduler())
 
-@router.post("/task/clean_id")
+# @router.post("/task/clean_id")
 async def clean_id():
     while not task_queue.empty():
         await task_queue.get()
