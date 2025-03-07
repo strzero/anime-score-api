@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from tortoise.expressions import F
 
 from config import settings
-from models.db_model import IdLink
+from models.db_model import IdLink, Score
 from models.response_model import NormalResponse
 from utils.logger import logger
 
@@ -65,6 +65,8 @@ async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id
         if any(getattr(updated_record, field) == "NoFound" for field in
                ['myanimelist_id', 'anilist_id', 'filmarks_id', 'anikore_id']):
             return NormalResponse(status=400)
+
+        await Score.filter(bangumi_id=bangumi_id).delete()
 
         return NormalResponse(status=200)
 
