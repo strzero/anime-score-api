@@ -16,9 +16,6 @@ class IdLink(models.Model):
     def __str__(self):
         return f"IdLink(bangumi_id={self.bangumi_id})"
 
-IdLink_Pydantic = pydantic_model_creator(IdLink, name="IdLink")
-IdLinkIn_Pydantic = pydantic_model_creator(IdLink, name="IdLinkIn", exclude=("bangumi_id",))
-
 class Score(models.Model):
     bangumi_id = fields.IntField(pk=True, index=True)
     update_time = fields.DatetimeField()
@@ -45,9 +42,6 @@ class Score(models.Model):
 
     def __str__(self):
         return f"Score(bangumi_id={self.bangumi_id}, update_time={self.update_time})"
-
-Score_Pydantic = pydantic_model_creator(Score, name="Score")
-ScoreIn_Pydantic = pydantic_model_creator(Score, name="ScoreIn", exclude=("bangumi_id",))
 
 class BangumiData(models.Model):
     id = fields.IntField(pk=True, index=True)

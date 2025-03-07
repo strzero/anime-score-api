@@ -5,7 +5,6 @@ from typing import List, Union, Dict
 from fastapi import APIRouter
 from uuid import UUID
 
-from models.db_model import IdLink_Pydantic, IdLinkIn_Pydantic, Score_Pydantic
 from models.request_model import IdRequest, ScoreRequest
 from models.response_model import IdResponse, ScoreResponse
 from services.request_process import process_id, process_score, TaskModel

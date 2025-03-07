@@ -4,18 +4,13 @@ from fastapi import APIRouter
 
 from models.db_model import BangumiData, BangumiData_Pydantic, BangumiTags_Pydantic, BangumiTags
 from models.request_model import IdRequest, ScoreRequest
+from models.response_model import BangumiDataResponse
 from services.request_process import process_id, process_score
 
 router = APIRouter()
 
-
-class BangumiResponse(BaseModel):
-    data: BangumiData_Pydantic
-    tags: List
-
-
 # 查询Bangumi数据和相关的标签
-@router.get("/bangumi/{bangumi_id}", response_model=BangumiResponse)
+@router.get("/bangumi/{bangumi_id}", response_model=BangumiDataResponse)
 async def get_bangumi_data(bangumi_id: int):
     # 查询BangumiData
     bangumi_data = await BangumiData.get(id=bangumi_id)
@@ -27,7 +22,7 @@ async def get_bangumi_data(bangumi_id: int):
     tag_names = [tag.tag for tag in bangumi_tags]
 
     # 将标签列表加入到响应数据中
-    return {
-        "data": bangumi_data,
-        "tags": tag_names
-    }
+    return BangumiDataResponse(
+        data=bangumi_data,
+        tags=tag_names
+    )

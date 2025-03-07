@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict
 from uuid import UUID
 
 class IdResponse(BaseModel):
@@ -36,3 +36,13 @@ class ScoreResponse(BaseModel):
     anilist: Optional[ScoreResponseSingle] = ScoreResponseSingle()
     filmarks: Optional[ScoreResponseSingle] = ScoreResponseSingle()
     anikore: Optional[ScoreResponseSingle] = ScoreResponseSingle()
+
+class BangumiDataResponse(BaseModel):
+    status: Optional[int] = None
+    message: Optional[str] = None
+    data: Optional[Dict] = None
+    tags: Optional[Dict] = None
+
+class NormalResponse(BaseModel):
+    status: Optional[int] = None
+    message: Optional[str] = None
