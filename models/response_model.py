@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 from typing import Optional
 from uuid import UUID
@@ -15,21 +17,22 @@ class IdResponse(BaseModel):
     user_add: Optional[int] = None
     verification_count: Optional[int] = None
 
-class ScoreRequestSingle(BaseModel):
+class ScoreResponseSingle(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
     id: Optional[str] = None
-    name: Optional[str] = None
+    title: Optional[str] = None
     score: Optional[float] = None
     count: Optional[int] = None
 
-class ScoreRequest(BaseModel):
+class ScoreResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
     task_id: Optional[UUID] = None
     bangumi_id: Optional[int] = None
     title: Optional[str] = None
-    myanimelist: Optional[ScoreRequestSingle] = None
-    anilist: Optional[ScoreRequestSingle] = None
-    filmarks: Optional[ScoreRequestSingle] = None
-    anikore: Optional[ScoreRequestSingle] = None
+    update_time: Optional[datetime] = None
+    myanimelist: Optional[ScoreResponseSingle] = ScoreResponseSingle()
+    anilist: Optional[ScoreResponseSingle] = ScoreResponseSingle()
+    filmarks: Optional[ScoreResponseSingle] = ScoreResponseSingle()
+    anikore: Optional[ScoreResponseSingle] = ScoreResponseSingle()

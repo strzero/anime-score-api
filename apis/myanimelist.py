@@ -4,6 +4,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from config import settings
+from models.response_model import ScoreResponseSingle
 from utils.client import client
 
 # 获取 logger 实例
@@ -28,11 +29,9 @@ async def get_id(name: str):
         logger.error(f"myanimelist ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
-async def get_score(local_id: str):
-    if local_id == "Error":
-        return "Error"
+async def get_score(local_id: str) -> ScoreResponseSingle:
     if local_id == "NoFound":
-        return "NoInput"
+        return ScoreResponseSingle(status=400,message='输入NoFound')
 
     try:
         score_url = f"{BASE_URL}/anime/{local_id}"
@@ -45,12 +44,23 @@ async def get_score(local_id: str):
         score = soup.select_one("div.score-label")
         count = soup.select_one("span[itemprop='ratingCount']")
 
-        return {
-            "name": title.get_text(strip=True) if title else "Unknown Title",
-            "score": float(score.get_text(strip=True)) if score and score.get_text(strip=True) != "N/A" else -1,
-            "count": int(count.get_text(strip=True)) if count else 0,
-            "id": local_id,
-        }
+        if score.get_text(strip=True) == "N/A":
+            return ScoreResponseSingle(
+                status=204,
+                message="无评分"
+            )
+
+        return ScoreResponseSingle(
+            status=200,
+            id=local_id,
+            title=title.get_text(strip=True),
+            score=float(score.get_text(strip=True)),
+            count=int(count.get_text(strip=True))
+        )
+
     except Exception as e:
         logger.error(f"myanimelist Score错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
-        return "Error"
+        return ScoreResponseSingle(
+            status=500,
+            message='全局错误'
+        )

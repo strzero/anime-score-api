@@ -7,7 +7,7 @@ from uuid import UUID
 
 from models.db_model import IdLink_Pydantic, IdLinkIn_Pydantic, Score_Pydantic
 from models.request_model import IdRequest, ScoreRequest
-from models.response_model import IdResponse
+from models.response_model import IdResponse, ScoreResponse
 from services.request_process import process_id, process_score, TaskModel
 
 router = APIRouter()
@@ -21,8 +21,8 @@ async def get_id(requests: List[IdRequest]):
     results = await asyncio.gather(*tasks)
     return {request.bangumi_id: result for request, result in zip(requests, results)}
 
-@router.post("/get_score", response_model=Dict[int, Union[Score_Pydantic, TaskModel]])
-async def get_id(requests: List[ScoreRequest]):
+@router.post("/get_score", response_model=Dict[int, ScoreResponse])
+async def get_score(requests: List[ScoreRequest]):
     tasks = []
     for request in requests:
         tasks.append(process_score(request))

@@ -6,6 +6,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from config import settings
+from models.response_model import ScoreResponseSingle
 from utils.client import client
 
 # 获取 logger 实例
@@ -35,11 +36,9 @@ async def get_id(name: str):
         logger.error(f"filmarks ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
-async def get_score(local_id: str):
-    if local_id == "Error":
-        return "Error"
+async def get_score(local_id: str) -> ScoreResponseSingle:
     if local_id == "NoFound":
-        return "NoInput"
+        return ScoreResponseSingle(status=400,message='输入NoFound')
 
     try:
         search_url = f"{BASE_URL}/animes/{local_id}"
@@ -63,12 +62,13 @@ async def get_score(local_id: str):
             if match:
                 count = int(match.group(1))
 
-        return {
-            "name": title,
-            "score": score,
-            "count": count,
-            "id": local_id,
-        }
+        return ScoreResponseSingle(
+            status=200,
+            id=local_id,
+            title=title,
+            score=score,
+            count=count
+        )
     except Exception as e:
         logger.error(f"filmarks Score错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
-        return "Error"
+        return ScoreResponseSingle(status=500,message='全局错误')

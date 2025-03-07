@@ -10,5 +10,5 @@ async def id_task_action(request: IdRequest):
 
 async def score_task_action(request: ScoreRequest):
     res = await get_four_score(request)
-    await save_score_db(res)
+    await save_score_db(res, request.delete_day)
     return res

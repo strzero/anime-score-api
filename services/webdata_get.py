@@ -1,8 +1,9 @@
 import asyncio
+from datetime import datetime
 
 from apis import myanimelist, anilist, filmarks, anikore
 from models.request_model import ScoreRequest, IdRequest
-from models.response_model import IdResponse
+from models.response_model import IdResponse, ScoreResponse
 from utils.logger import logger
 
 async def get_four_id(request: IdRequest) -> IdResponse:
@@ -21,18 +22,19 @@ async def get_four_id(request: IdRequest) -> IdResponse:
         )
 
     return IdResponse(
-        status=200,
+        status=201,
         message='成功从网站抓取数据',
         bangumi_id=request.bangumi_id,
         title=request.title,
         myanimelist_id=myanimelist_id,
         anilist_id=anilist_id,
         filmarks_id=filmarks_id,
-        anikore_id=anikore_id
+        anikore_id=anikore_id,
+        update_time=datetime.now()
     )
 
 
-async def get_four_score(request: ScoreRequest):
+async def get_four_score(request: ScoreRequest) -> ScoreResponse:
 
     myanimelist_task = myanimelist.get_score(request.myanimelist_id)
     anilist_task = anilist.get_score(request.anilist_id)
@@ -43,12 +45,15 @@ async def get_four_score(request: ScoreRequest):
         myanimelist_task, anilist_task, filmarks_task, anikore_task
     )
 
-    return {
-        "title": request.title,
-        "bangumi_id": request.bangumi_id,
-        "delete_day": request.delete_day,
-        "myanimelist": myanimelist_score,
-        "anilist": anilist_score,
-        "filmarks": filmarks_score,
-        "anikore": anikore_score,
-    }
+    return ScoreResponse(
+        status=201,
+        message="成功从网站抓取数据",
+        bangumi_id=request.bangumi_id,
+        title=request.title,
+        myanimelist=myanimelist_score,
+        anilist=anilist_score,
+        filmarks=filmarks_score,
+        anikore=anikore_score,
+
+        delete_day=request.delete_day
+    )

@@ -4,6 +4,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from config import settings
+from models.response_model import ScoreResponseSingle
 from utils.client import client
 
 # 获取 logger 实例
@@ -35,11 +36,9 @@ async def get_id(name: str):
         logger.error(f"anikore ID错误 {name}: {type(e).__name__} - {e}", exc_info=settings.logger_exc_info)
         return "Error"
 
-async def get_score(local_id: str):
-    if local_id == "Error":
-        return "Error"
+async def get_score(local_id: str) -> ScoreResponseSingle:
     if local_id == "NoFound":
-        return "NoInput"
+        return ScoreResponseSingle(status=400,message='输入NoFound')
 
     try:
         score_url = BASE_URL + "/anime/" + local_id
@@ -68,12 +67,13 @@ async def get_score(local_id: str):
         ).find("a")
         count = count_span.get_text(strip=True) if count_span else "0"
 
-        return {
-            "name": title,
-            "score": score,
-            "count": int(count),
-            "id": local_id,
-        }
+        return ScoreResponseSingle(
+            status=200,
+            id=local_id,
+            title=title,
+            score=score,
+            count=count
+        )
     except Exception as e:
         logger.error(f"anikore Score错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
-        return "Error"
+        return ScoreResponseSingle(status=500,message='全局错误')
