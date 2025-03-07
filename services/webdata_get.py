@@ -2,9 +2,10 @@ import asyncio
 
 from apis import myanimelist, anilist, filmarks, anikore
 from models.request_model import ScoreRequest, IdRequest
+from models.response_model import IdResponse
 from utils.logger import logger
 
-async def get_four_id(request: IdRequest):
+async def get_four_id(request: IdRequest) -> IdResponse:
     myanimelist_task = myanimelist.get_id(request.title)
     anilist_task = anilist.get_id(request.title)
     filmarks_task = filmarks.get_id(request.title)
@@ -14,13 +15,21 @@ async def get_four_id(request: IdRequest):
         myanimelist_task, anilist_task, filmarks_task, anikore_task
     )
 
-    return {
-        "bangumi_id": request.bangumi_id,
-        "myanimelist_id": myanimelist_id,
-        "anilist_id": anilist_id,
-        "filmarks_id": filmarks_id,
-        "anikore_id": anikore_id
-    }
+    if any(value == 'Error' for value in [myanimelist_id, anilist_id, filmarks_id, anikore_id]):
+        return IdResponse(
+            status=500
+        )
+
+    return IdResponse(
+        status=200,
+        message='成功从网站抓取数据',
+        bangumi_id=request.bangumi_id,
+        title=request.title,
+        myanimelist_id=myanimelist_id,
+        anilist_id=anilist_id,
+        filmarks_id=filmarks_id,
+        anikore_id=anikore_id
+    )
 
 
 async def get_four_score(request: ScoreRequest):

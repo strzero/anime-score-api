@@ -1,6 +1,6 @@
 from models.request_model import IdRequest, ScoreRequest
-from services.get_web_data import get_four_score, get_four_id
-from services.save_database import save_id_db, save_score_db
+from services.webdata_get import get_four_score, get_four_id
+from services.db_save import save_id_db, save_score_db
 
 
 async def id_task_action(request: IdRequest):

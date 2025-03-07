@@ -9,7 +9,7 @@ from services.task_scheduler import task_queue, task_scheduler, Task, running_ta
 
 from config import settings
 from models.request_model import ScoreRequest
-from services.get_web_data import get_four_score
+from services.webdata_get import get_four_score
 
 router = APIRouter()
 

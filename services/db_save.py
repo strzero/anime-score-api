@@ -2,42 +2,27 @@ from models.db_model import IdLink, Score
 from tortoise.exceptions import DoesNotExist
 from datetime import datetime, timedelta
 
-async def save_id_db(id_data):
-    # 提取 id_data 中的各个字段
-    bangumi_id = id_data.get('bangumi_id')
-    myanimelist_id = id_data.get('myanimelist_id')
-    anilist_id = id_data.get('anilist_id')
-    filmarks_id = id_data.get('filmarks_id')
-    anikore_id = id_data.get('anikore_id')
+from models.response_model import IdResponse
+from utils.logger import logger
 
-    if any(value == 'Error' for value in [myanimelist_id, anilist_id, filmarks_id, anikore_id]):
+
+async def save_id_db(id_response: IdResponse):
+    if id_response.status != 200:
         return
 
     try:
-        # 尝试查找是否已存在该 bangumi_id 的记录
-        id_link, created = await IdLink.get_or_create(bangumi_id=bangumi_id)
+        id_link, created = await IdLink.get_or_create(bangumi_id=id_response.bangumi_id)
 
-        # 更新字段值
-        id_link.myanimelist_id = myanimelist_id
-        id_link.anilist_id = anilist_id
-        id_link.filmarks_id = filmarks_id
-        id_link.anikore_id = anikore_id
+        id_link.myanimelist_id = id_response.myanimelist_id
+        id_link.anilist_id = id_response.anilist_id
+        id_link.filmarks_id = id_response.filmarks_id
+        id_link.anikore_id = id_response.anikore_id
         id_link.user_add = 0
         id_link.verification_count = 0
 
-        # 保存更新后的记录
         await id_link.save()
     except DoesNotExist:
-        # 如果找不到记录，则创建新记录
-        await IdLink.create(
-            bangumi_id=bangumi_id,
-            myanimelist_id=myanimelist_id,
-            anilist_id=anilist_id,
-            filmarks_id=filmarks_id,
-            anikore_id=anikore_id,
-            user_add=0,
-            verification_count=0
-        )
+        logger.error("save id to db error: DoesNotExist", id_response)
 
 
 async def save_score_db(score_data):

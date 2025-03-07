@@ -8,7 +8,7 @@ from uuid import UUID
 from models.db_model import IdLink_Pydantic, IdLinkIn_Pydantic, Score_Pydantic
 from models.request_model import IdRequest, ScoreRequest
 from models.response_model import IdResponse
-from services.process_request import process_id, process_score, TaskModel
+from services.request_process import process_id, process_score, TaskModel
 
 router = APIRouter()
 

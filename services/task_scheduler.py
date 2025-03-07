@@ -1,7 +1,7 @@
 import asyncio
 from config import settings
 from models.request_model import ScoreRequest, IdRequest
-from services.get_web_data import get_four_score, get_four_id
+from services.webdata_get import get_four_score, get_four_id
 from services.task_action import id_task_action, score_task_action
 from utils.logger import logger
 

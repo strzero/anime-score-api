@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from models.db_model import BangumiData, BangumiData_Pydantic, BangumiTags_Pydantic, BangumiTags
 from models.request_model import IdRequest, ScoreRequest
-from services.process_request import process_id, process_score
+from services.request_process import process_id, process_score
 
 router = APIRouter()
 
