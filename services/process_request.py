@@ -1,5 +1,6 @@
 import asyncio
 import uuid
+from typing import Any
 
 from pydantic import BaseModel
 from tortoise.exceptions import DoesNotExist
@@ -8,25 +9,27 @@ from models.request_model import IdRequest, ScoreRequest
 from routers.id_task_queue import add_id_task
 from routers.score_task_queue import add_score_task
 from services.check_database import check_database_id, check_database_score
+from services.response_wrap import warp_id_success_webdata, warp_id_wait, warp_id_success_db
 from services.task_scheduler import task_results
 
 class TaskModel(BaseModel):
-    def __init__(self, task_id):
+    def __init__(self, task_id, **data: Any):
+        super().__init__(**data)
         task_id: int
 
 async def process_id(request: IdRequest):
     try:
         db_res = await check_database_id(request)
-        return db_res
+        return warp_id_success_db(db_res, request.title)
     except DoesNotExist:
         task_uuid = await add_id_task(request)
 
         for i in range(40):
             if task_uuid in task_results:
-                return task_results[task_uuid]
+                return warp_id_success_webdata(task_results[task_uuid], request.title, task_uuid)
             await asyncio.sleep(0.5)
 
-        return TaskModel(task_id=task_uuid)
+        return warp_id_wait(task_uuid)
 
 async def process_score(request: ScoreRequest):
     try:

@@ -15,14 +15,11 @@ async def get_four_id(request: IdRequest):
     )
 
     return {
-        # "title": request.title,
         "bangumi_id": request.bangumi_id,
         "myanimelist_id": myanimelist_id,
         "anilist_id": anilist_id,
         "filmarks_id": filmarks_id,
-        "anikore_id": anikore_id,
-        "user_add": 0,
-        "verification_count": 0
+        "anikore_id": anikore_id
     }
 
 

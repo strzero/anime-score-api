@@ -7,11 +7,12 @@ from uuid import UUID
 
 from models.db_model import IdLink_Pydantic, IdLinkIn_Pydantic, Score_Pydantic
 from models.request_model import IdRequest, ScoreRequest
+from models.response_model import IdResponse
 from services.process_request import process_id, process_score, TaskModel
 
 router = APIRouter()
 
-@router.post("/get_id", response_model=Dict[int, Union[IdLink_Pydantic, TaskModel]])
+@router.post("/get_id", response_model=Dict[int, IdResponse])
 async def get_id(requests: List[IdRequest]):
     tasks = []
     for request in requests:
