@@ -5,7 +5,7 @@ from models.db_model import Score, IdLink
 from models.response_model import IdResponse, ScoreResponseSingle, ScoreResponse
 
 
-def warp_id_success_db(db_data: IdLink, title) -> IdResponse:
+def warp_id_success_db(db_data: IdLink, title: str = 'NoSetTitle') -> IdResponse:
     return IdResponse(
         status=200,
         message='成功从数据库读取数据',
@@ -30,7 +30,7 @@ def warp_id_wait(task_id) -> IdResponse:
         task_id=task_id
     )
 
-def warp_score_success_db(db_data: Score, title) -> ScoreResponse:
+def warp_score_success_db(db_data: Score, title = 'NoSetTitle') -> ScoreResponse:
     return ScoreResponse(
         status=200,
         message='成功从数据库读取数据',

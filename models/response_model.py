@@ -52,6 +52,14 @@ class BangumiDataResponse(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
+class QueryResponse(BaseModel):
+    status: Optional[int] = None
+    message: Optional[str] = None
+    bangumi_data: Optional[BangumiDataResponse] = None
+    id_data: Optional[IdResponse] = None
+    score_data: Optional[ScoreResponse] = None
+
 class NormalResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
+

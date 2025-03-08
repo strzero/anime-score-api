@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 
 from config import settings
-from routers import get_data, id_task_queue, score_task_queue, bangumi, change_statistics
+from routers import query, id_task_queue, score_task_queue, bangumi, change_statistics
 from utils.logger import logger
 
 @asynccontextmanager
@@ -30,7 +30,7 @@ register_tortoise(
     # add_exception_handlers=True,
 )
 
-app.include_router(get_data.router)
+app.include_router(query.router)
 app.include_router(id_task_queue.router)
 app.include_router(score_task_queue.router)
 app.include_router(bangumi.router)
