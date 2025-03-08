@@ -35,7 +35,7 @@ async def revoke_confirm(bangumi_id: int):
 
 @router.post("/update/{bangumi_id}")
 async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id: str = None,
-                         anilist_id: str = None, filmarks_id: str = None):
+                          anilist_id: str = None, filmarks_id: str = None):
     try:
         # 先收集更新的字段
         update_fields = {}
@@ -48,7 +48,7 @@ async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id
         if filmarks_id is not None:
             update_fields['filmarks_id'] = filmarks_id
 
-        # 如果字段为空，直接返回 400
+        # 检查是否有更新字段为 "NoFound"
         if any(value == "NoFound" for value in update_fields.values()):
             return NormalResponse(status=400)
 
@@ -57,14 +57,6 @@ async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id
             await IdLink.filter(bangumi_id=bangumi_id).update(
                 **update_fields, user_add=1
             )
-
-        # 获取更新后的记录
-        updated_record = await IdLink.get(bangumi_id=bangumi_id)
-
-        # 检查更新后的四个 id 是否都为 "NoFound"
-        if any(getattr(updated_record, field) == "NoFound" for field in
-               ['myanimelist_id', 'anilist_id', 'filmarks_id', 'anikore_id']):
-            return NormalResponse(status=400)
 
         await Score.filter(bangumi_id=bangumi_id).delete()
 

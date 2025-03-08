@@ -17,7 +17,10 @@ async def save_id_db(res: IdResponse):
         id_link.anilist_id = res.anilist_id
         id_link.filmarks_id = res.filmarks_id
         id_link.anikore_id = res.anikore_id
-        id_link.user_add = 0
+        id_link.myanimelist_useradd = 0
+        id_link.anilist_useradd = 0
+        id_link.filmarks_useradd = 0
+        id_link.anikore_useradd = 0
         id_link.verification_count = 0
 
         await id_link.save()

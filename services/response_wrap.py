@@ -15,7 +15,10 @@ def warp_id_success_db(db_data: IdLink, title) -> IdResponse:
         anilist_id=db_data.anilist_id,
         filmarks_id=db_data.filmarks_id,
         anikore_id=db_data.anikore_id,
-        user_add=db_data.user_add,
+        myanimelist_useradd=db_data.myanimelist_useradd,
+        anilist_useradd=db_data.anilist_useradd,
+        filmarks_useradd=db_data.filmarks_useradd,
+        anikore_useradd=db_data.anikore_useradd,
         verification_count=db_data.verification_count
     )
 

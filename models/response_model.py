@@ -1,8 +1,11 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from uuid import UUID
+
+from models.db_model import BangumiData, BangumiTags, BangumiData_Pydantic
+
 
 class IdResponse(BaseModel):
     status: Optional[int] = None
@@ -14,7 +17,10 @@ class IdResponse(BaseModel):
     anilist_id: Optional[str] = None
     filmarks_id: Optional[str] = None
     anikore_id: Optional[str] = None
-    user_add: Optional[int] = None
+    myanimelist_useradd: Optional[int] = None
+    anilist_useradd: Optional[int] = None
+    filmarks_useradd: Optional[int] = None
+    anikore_useradd: Optional[int] = None
     verification_count: Optional[int] = None
 
 class ScoreResponseSingle(BaseModel):
@@ -40,8 +46,11 @@ class ScoreResponse(BaseModel):
 class BangumiDataResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
-    data: Optional[Dict] = None
-    tags: Optional[Dict] = None
+    data: Optional[BangumiData_Pydantic] = None
+    tags: Optional[List] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 class NormalResponse(BaseModel):
     status: Optional[int] = None

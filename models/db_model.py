@@ -7,7 +7,10 @@ class IdLink(models.Model):
     anilist_id = fields.CharField(max_length=255, null=True)
     filmarks_id = fields.CharField(max_length=255, null=True)
     anikore_id = fields.CharField(max_length=255, null=True)
-    user_add = fields.IntField(null=True)
+    myanimelist_useradd = fields.IntField(null=True)
+    anilist_useradd = fields.IntField(null=True)
+    filmarks_useradd = fields.IntField(null=True)
+    anikore_useradd = fields.IntField(null=True)
     verification_count = fields.IntField(null=True)
 
     class Meta:
