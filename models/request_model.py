@@ -1,4 +1,8 @@
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, Field
+from pydantic.v1 import root_validator
+
 
 class IdRequest(BaseModel):
     title: str = 'NoSetTitle'

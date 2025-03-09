@@ -50,7 +50,13 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
         soup = BeautifulSoup(response.text, "lxml")
 
         score_element = soup.select_one("div.c2-rating-l__text")
-        score = float(score_element.text) * 2 if score_element and score_element.text != "-" else -1
+        if score_element and score_element.text != "-":
+            score = float(score_element.text) * 2
+        else:
+            return ScoreResponseSingle(
+                status=204,
+                message="无评分"
+            )
 
         title_element = soup.select_one("h2.p-content-detail__title")
         title = title_element.get_text(strip=True) if title_element else "Unknown Title"

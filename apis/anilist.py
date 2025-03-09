@@ -81,7 +81,16 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
             media.get("title", {}).get("native") or
             media.get("title", {}).get("romaji", "Unknown Title")
         )
-        score = (media.get("averageScore", -1) / 10) if media.get("averageScore") is not None else -1
+
+        if media.get("averageScore") is None:
+            return ScoreResponseSingle(
+                status=204,
+                message="无评分"
+            )
+        score = media.get("averageScore") / 10
+
+
+
         count = sum(item["amount"] for item in media.get("stats", {}).get("scoreDistribution", []))
 
         return ScoreResponseSingle(

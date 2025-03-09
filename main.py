@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 
 from config import settings
-from routers import query, id_task_queue, score_task_queue, bangumi, change_statistics
+from routers import query, id_task_queue, score_task_queue, bangumi, change_statistics, anime_now
 from utils.logger import logger
 
 @asynccontextmanager
@@ -35,10 +35,11 @@ app.include_router(id_task_queue.router)
 app.include_router(score_task_queue.router)
 app.include_router(bangumi.router)
 app.include_router(change_statistics.router)
+app.include_router(anime_now.router)
 
 logger.info("\n\n\n------------------------------\n\n\n")
 logger.info("API启动:" + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="localhost", port=5100)

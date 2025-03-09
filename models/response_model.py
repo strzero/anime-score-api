@@ -64,3 +64,6 @@ class NormalResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
 
+class NowResponse(BaseModel):
+    status: Optional[int] = None
+    message: Optional[str] = None
