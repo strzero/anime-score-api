@@ -1,3 +1,4 @@
 import httpx
+import httpx_cache
 
-client = httpx.AsyncClient()
+client = httpx_cache.AsyncClient()

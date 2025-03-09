@@ -20,5 +20,5 @@ async def anime_now():
         logger.error(e)
         return NowResponse(
             status_code=500,
-            message="意外全局错误"
+            message=str(e)
         )

@@ -19,7 +19,7 @@ async def confirm(bangumi_id: int):
         return NormalResponse(status=200)
     except Exception as e:
         logger.error(f"confirm 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return NormalResponse(status=500, message=e)
+        return NormalResponse(status=500, message=str(e))
 
 @router.post("/revoke_confirm/{bangumi_id}")
 async def revoke_confirm(bangumi_id: int):
@@ -30,33 +30,21 @@ async def revoke_confirm(bangumi_id: int):
         return NormalResponse(status=200)
     except Exception as e:
         logger.error(f"confirm 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return NormalResponse(status=500, message=e)
+        return NormalResponse(status=500, message=str(e))
 
 
 @router.post("/update/{bangumi_id}")
-async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id: str = None,
-                          anilist_id: str = None, filmarks_id: str = None):
+async def update_id_link(bangumi_id: int = None, myanimelist_id: str = None, anilist_id: str = None,
+                         filmarks_id: str = None, anikore_id: str = None):
     try:
-        # 先收集更新的字段
-        update_fields = {}
-        if anikore_id is not None:
-            update_fields['anikore_id'] = anikore_id
-        if myanimelist_id is not None:
-            update_fields['myanimelist_id'] = myanimelist_id
-        if anilist_id is not None:
-            update_fields['anilist_id'] = anilist_id
-        if filmarks_id is not None:
-            update_fields['filmarks_id'] = filmarks_id
-
-        # 检查是否有更新字段为 "NoFound"
-        if any(value == "NoFound" for value in update_fields.values()):
-            return NormalResponse(status=400)
-
-        # 执行更新操作
-        if update_fields:
-            await IdLink.filter(bangumi_id=bangumi_id).update(
-                **update_fields, user_add=1
-            )
+        if myanimelist_id:
+            await IdLink.filter(bangumi_id=bangumi_id).update(myanimelist_id=myanimelist_id, myanimelist_useradd=1)
+        if anilist_id:
+            await IdLink.filter(bangumi_id=bangumi_id).update(anilist_id=anilist_id, anilist_useradd=1)
+        if filmarks_id:
+            await IdLink.filter(bangumi_id=bangumi_id).update(filmarks_id=filmarks_id, filmark_useradd=1)
+        if anikore_id:
+            await IdLink.filter(bangumi_id=bangumi_id).update(anikore_id=anikore_id, anikore_useradd=1)
 
         await Score.filter(bangumi_id=bangumi_id).delete()
 
@@ -64,4 +52,4 @@ async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id
 
     except Exception as e:
         logger.error(f"update_id_link 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return NormalResponse(status=500, message=e)
+        return NormalResponse(status=500, message=str(e))

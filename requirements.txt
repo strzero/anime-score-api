@@ -9,3 +9,4 @@ lxml==4.9.3
 aiomysql==0.2.0
 uvicorn[standard]
 tortoise-orm[aiomysql]
+httpx-cache

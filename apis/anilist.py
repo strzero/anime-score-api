@@ -103,4 +103,4 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
         )
     except Exception as e:
         logger.error(f"anilist Score错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
-        return ScoreResponseSingle(status=500,message=e)
+        return ScoreResponseSingle(status=500,message=str(e))

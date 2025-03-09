@@ -120,4 +120,4 @@ async def process_query(request: QueryRequest) -> QueryResponse:
 
     except Exception as e:
         logger.error(f"query 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return QueryResponse(status=500, message=e)
+        return QueryResponse(status=500, message=str(e))
