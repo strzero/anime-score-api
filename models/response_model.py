@@ -7,6 +7,7 @@ from uuid import UUID
 from models.db_model import BangumiData, BangumiTags, BangumiData_Pydantic
 
 
+
 class IdResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
@@ -17,11 +18,11 @@ class IdResponse(BaseModel):
     anilist_id: Optional[str] = None
     filmarks_id: Optional[str] = None
     anikore_id: Optional[str] = None
-    myanimelist_useradd: Optional[int] = None
-    anilist_useradd: Optional[int] = None
-    filmarks_useradd: Optional[int] = None
-    anikore_useradd: Optional[int] = None
-    verification_count: Optional[int] = None
+    myanimelist_useradd: Optional[int] = 0
+    anilist_useradd: Optional[int] = 0
+    filmarks_useradd: Optional[int] = 0
+    anikore_useradd: Optional[int] = 0
+    verification_count: Optional[int] = 0
 
 class ScoreResponseSingle(BaseModel):
     status: Optional[int] = None
@@ -55,9 +56,9 @@ class BangumiDataResponse(BaseModel):
 class QueryResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
-    bangumi_data: Optional[BangumiDataResponse] = None
     id_data: Optional[IdResponse] = None
     score_data: Optional[ScoreResponse] = None
+    bangumi_data: Optional[BangumiDataResponse] = None
 
 class NormalResponse(BaseModel):
     status: Optional[int] = None

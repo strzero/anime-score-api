@@ -1,3 +1,5 @@
+import os
+
 origins = [
     "http://localhost:3000"
 ]
@@ -10,9 +12,13 @@ real_headers = {
 
 timeout = 10
 
+os.environ.get('SCORE_DB')
+
+database_url = os.environ.get('SCORE_DB', 'mysql://root:so6666@localhost:13306/anime-score')
+
 DATABASE_CONFIG = {
     "connections": {
-        "default": "mysql://root:so6666@localhost:3306/anime-score"
+        "default": database_url
     },
     "apps": {
         "models": {

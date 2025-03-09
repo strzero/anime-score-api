@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from uuid import UUID
 
 from models.request_model import IdRequest, ScoreRequest, QueryRequest
-from models.response_model import IdResponse, ScoreResponse
+from models.response_model import IdResponse, ScoreResponse, QueryResponse
 from services.request_process import process_id, process_score, TaskModel, process_query
 
 router = APIRouter()
@@ -30,10 +30,14 @@ async def get_score(requests: List[ScoreRequest]):
     return {request.bangumi_id: result for request, result in zip(requests, results)}
 
 @router.post("/query")
-async def query(requests: List[QueryRequest]):
+async def query(requests: List[QueryRequest], response_model=QueryResponse):
     tasks = []
     for request in requests:
         tasks.append(process_query(request))
 
     results = await asyncio.gather(*tasks)
     return {request.bangumi_id: result for request, result in zip(requests, results)}
+
+@router.get("/query/{bangumi_id}", response_model=QueryResponse)
+async def query_single(bangumi_id: int):
+    return await process_query(QueryRequest(bangumi_id=bangumi_id))

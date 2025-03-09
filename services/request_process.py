@@ -27,7 +27,9 @@ async def process_id(request: IdRequest) -> IdResponse:
         db_res = await IdLink.get(bangumi_id=request.bangumi_id)
         return warp_id_success_db(db_res, request.title)
     except DoesNotExist:
-        task_uuid = await add_id_task(request)
+        task_uuid = uuid.uuid4()
+        # 如果任务重复，将之前的任务id给现在
+        task_uuid = await add_id_task(request, task_uuid)
 
         for i in range(40):
             if task_uuid in task_results:
@@ -41,7 +43,9 @@ async def process_score(request: ScoreRequest) -> ScoreResponse:
         db_res = await Score.get(bangumi_id=request.bangumi_id)
         return warp_score_success_db(db_res, request.title)
     except DoesNotExist:
-        task_uuid = await add_score_task(request)
+        task_uuid = uuid.uuid4()
+        # 如果任务重复，将之前的任务id给现在
+        task_uuid = await add_score_task(request, task_uuid)
 
         for i in range(40):
             if task_uuid in task_results:
