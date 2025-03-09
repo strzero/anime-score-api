@@ -30,4 +30,4 @@ DATABASE_CONFIG = {
 
 logger_exc_info = True
 
-task_queue_interval = 5
+task_queue_interval = 3

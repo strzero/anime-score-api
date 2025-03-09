@@ -49,17 +49,19 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
 
         soup = BeautifulSoup(response.text, "lxml")
 
+        title_element = soup.select_one("h2.p-content-detail__title")
+        title = title_element.get_text(strip=True) if title_element else "Unknown Title"
+
         score_element = soup.select_one("div.c2-rating-l__text")
         if score_element and score_element.text != "-":
             score = float(score_element.text) * 2
         else:
             return ScoreResponseSingle(
                 status=204,
-                message="无评分"
+                message="无评分",
+                title=title
             )
 
-        title_element = soup.select_one("h2.p-content-detail__title")
-        title = title_element.get_text(strip=True) if title_element else "Unknown Title"
 
         og_description = soup.select_one("meta[property='og:description']")
         count = 0
@@ -77,4 +79,4 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
         )
     except Exception as e:
         logger.error(f"filmarks Score错误 {local_id}: {e}", exc_info=settings.logger_exc_info)
-        return ScoreResponseSingle(status=500,message='全局错误')
+        return ScoreResponseSingle(status=500,message=e)

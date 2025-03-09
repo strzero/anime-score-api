@@ -19,7 +19,7 @@ async def confirm(bangumi_id: int):
         return NormalResponse(status=200)
     except Exception as e:
         logger.error(f"confirm 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return NormalResponse(status=500)
+        return NormalResponse(status=500, message=e)
 
 @router.post("/revoke_confirm/{bangumi_id}")
 async def revoke_confirm(bangumi_id: int):
@@ -30,7 +30,7 @@ async def revoke_confirm(bangumi_id: int):
         return NormalResponse(status=200)
     except Exception as e:
         logger.error(f"confirm 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return NormalResponse(status=500)
+        return NormalResponse(status=500, message=e)
 
 
 @router.post("/update/{bangumi_id}")
@@ -64,4 +64,4 @@ async def update_id_link(bangumi_id: int, anikore_id: str = None, myanimelist_id
 
     except Exception as e:
         logger.error(f"update_id_link 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return NormalResponse(status=500)
+        return NormalResponse(status=500, message=e)

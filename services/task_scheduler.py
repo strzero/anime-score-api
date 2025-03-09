@@ -15,10 +15,10 @@ bgmid_to_uuid_getscore = {}
 task_results = {}
 
 class Task:
-    def __init__(self, request, uuid):
-        self.uuid = uuid
+    def __init__(self, request, task_event, task_future):
         self.request = request
-        self.completed = False
+        self.task_event = task_event
+        self.task_future = task_future
         self.result = None
 
     async def run(self):
@@ -28,8 +28,9 @@ class Task:
         elif isinstance(self.request, IdRequest):
             self.result = await id_task_action(self.request)
             bgmid_to_uuid_getid.pop(self.request.bangumi_id, '')
-        self.completed = True
-        task_results[self.uuid] = self.result
+
+        self.task_event.set()
+        self.task_future.set_result(self.result)
         return self
 
 # 任务调度器（每秒启动一个任务）

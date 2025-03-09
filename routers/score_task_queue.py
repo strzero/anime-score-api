@@ -14,15 +14,10 @@ from services.webdata_get import get_four_score
 router = APIRouter()
 
 # @router.post("/task/add_score")
-async def add_score_task(request: ScoreRequest, task_id: UUID):
-    bangumi_id = request.bangumi_id
-    if not bangumi_id in bgmid_to_uuid_getscore:
-        task = Task(request, task_id)
-        bgmid_to_uuid_getscore[bangumi_id] = [task_id, 1]
-        await task_queue.put(task)
-    else:
-        bgmid_to_uuid_getscore[bangumi_id][1] += 1
-    return bgmid_to_uuid_getscore[bangumi_id][0]
+async def add_score_task(request: ScoreRequest, task_event, task_future):
+    task = Task(request, task_event, task_future)
+    await task_queue.put(task)
+
 
 
 @router.websocket("/ws/score/tasks")

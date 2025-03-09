@@ -11,15 +11,9 @@ from utils.logger import logger
 router = APIRouter()
 
 # @router.post("/task/add_id")
-async def add_id_task(request: IdRequest, task_id: UUID):
-    bangumi_id = request.bangumi_id
-    if not bangumi_id in bgmid_to_uuid_getid:
-        task = Task(request, task_id)
-        bgmid_to_uuid_getid[bangumi_id] = [task_id, 1]
-        await task_queue.put(task)
-    else:
-        bgmid_to_uuid_getid[bangumi_id][1] += 1
-    return bgmid_to_uuid_getid[bangumi_id][0]
+async def add_id_task(request: IdRequest, task_event, task_future):
+    task = Task(request, task_event, task_future)
+    await task_queue.put(task)
 
 @router.websocket("/ws/id/tasks")
 async def websocket_tasks(websocket: WebSocket):

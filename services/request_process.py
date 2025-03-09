@@ -27,32 +27,23 @@ async def process_id(request: IdRequest) -> IdResponse:
         db_res = await IdLink.get(bangumi_id=request.bangumi_id)
         return warp_id_success_db(db_res, request.title)
     except DoesNotExist:
-        task_uuid = uuid.uuid4()
-        # 如果任务重复，将之前的任务id给现在
-        task_uuid = await add_id_task(request, task_uuid)
-
-        for i in range(40):
-            if task_uuid in task_results:
-                return task_results[task_uuid]
-            await asyncio.sleep(0.5)
-
-        return warp_id_wait(task_uuid)
+        task_event = asyncio.Event()
+        task_future = asyncio.Future()
+        await add_id_task(request, task_event, task_future)
+        await task_event.wait()
+        return await task_future
 
 async def process_score(request: ScoreRequest) -> ScoreResponse:
     try:
         db_res = await Score.get(bangumi_id=request.bangumi_id)
         return warp_score_success_db(db_res, request.title)
     except DoesNotExist:
-        task_uuid = uuid.uuid4()
+        task_event = asyncio.Event()
+        task_future = asyncio.Future()
         # 如果任务重复，将之前的任务id给现在
-        task_uuid = await add_score_task(request, task_uuid)
-
-        for i in range(40):
-            if task_uuid in task_results:
-                return task_results[task_uuid]
-            await asyncio.sleep(0.5)
-
-        return warp_score_wait(task_uuid)
+        await add_score_task(request, task_event, task_future)
+        await task_event.wait()
+        return await task_future
 
 async def process_bangumi(bangumi_id: int) -> BangumiDataResponse:
     try:
@@ -129,4 +120,4 @@ async def process_query(request: QueryRequest) -> QueryResponse:
 
     except Exception as e:
         logger.error(f"query 错误 {bangumi_id}: {e}", exc_info=settings.logger_exc_info)
-        return QueryResponse(status=500, message="意外错误")
+        return QueryResponse(status=500, message=e)
