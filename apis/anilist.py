@@ -52,12 +52,7 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
                     english
                     native
                 }
-                averageScore
-                stats {
-                    scoreDistribution {
-                        amount
-                    }
-                }
+                id
             }
         }
         """
