@@ -1,8 +1,10 @@
 import os
 
-origins = [
-    "http://localhost:3000"
-]
+# origins = [
+#     "http://192.168.0.1:3000"
+# ]
+
+origins = ["*"]
 
 log_file_path = "logs.log"
 
