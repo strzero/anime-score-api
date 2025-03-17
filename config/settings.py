@@ -14,7 +14,7 @@ timeout = 10
 
 os.environ.get('SCORE_DB')
 
-database_url = os.environ.get('SCORE_DB', 'mysql://root:so6666@localhost:13306/anime-score')
+database_url = os.environ.get('AS_DB_URL', 'mysql://root:123456@localhost:3306/anime-score')
 
 DATABASE_CONFIG = {
     "connections": {
