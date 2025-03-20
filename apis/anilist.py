@@ -52,7 +52,12 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
                     english
                     native
                 }
-                id
+                averageScore
+                stats {
+                    scoreDistribution {
+                        amount
+                    }
+                }
             }
         }
         """
@@ -81,7 +86,8 @@ async def get_score(local_id: str) -> ScoreResponseSingle:
             return ScoreResponseSingle(
                 status=204,
                 message="无评分",
-                title=title
+                title=title,
+                id=local_id
             )
         score = media.get("averageScore") / 10
 
