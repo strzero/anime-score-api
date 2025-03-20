@@ -1,10 +1,17 @@
 import logging
+from logging.handlers import RotatingFileHandler
 from config import settings
 
-logging.basicConfig(
+log_handler = RotatingFileHandler(
     filename=settings.log_file_path,
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    maxBytes=10 * 1024 * 1024,  # 当日志文件超过 10MB 时清空并重新写入
+    backupCount=3,
+    encoding="utf-8"
 )
-logging.getLogger("httpx").setLevel(logging.WARNING)
+
+log_handler.setLevel(logging.INFO)
+log_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
 logger = logging.getLogger(__name__)
+logger.addHandler(log_handler)
+logger.setLevel(logging.INFO)
