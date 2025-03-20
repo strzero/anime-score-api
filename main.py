@@ -7,12 +7,14 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from config import settings
 from routers import query, id_task_queue, score_task_queue, bangumi, change_statistics, anime_now
+from services.db_renew import renew_data
 from services.task_scheduler import task_scheduler
 from utils.logger import logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     asyncio.create_task(task_scheduler())
+    asyncio.create_task(renew_data())
     yield
 
 app = FastAPI(lifespan=lifespan)
