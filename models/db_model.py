@@ -1,6 +1,10 @@
 from tortoise import fields, models
 from tortoise.contrib.pydantic import pydantic_model_creator
 
+class Info(models.Model):
+    variable = fields.CharField(max_length=255, pk=True)
+    value = fields.CharField(max_length=255)
+
 class IdLink(models.Model):
     bangumi_id = fields.IntField(pk=True, index=True)
     myanimelist_id = fields.CharField(max_length=255, null=True)
