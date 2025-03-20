@@ -19,7 +19,8 @@ async def maintain_db():
                     update_status = update_bangumi_data()
                     if update_status:
                         logger.info("Bangumi数据库更新成功！")
-                        local.update(value=web_version_time)
+                        local.value = web_version_time
+                        await local.save()
                     else:
                         logger.error("Bangumi数据库更新失败！")
                 else:
