@@ -7,7 +7,7 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from config import settings
 from maintain.maintain_db import maintain_db
-from routers import info, query, id_task_queue, score_task_queue, bangumi, change_statistics, anime_now
+from routers import info, query, id_task_queue, score_task_queue, bangumi, change_statistics, anime_now, search
 from services.db_renew import renew_data
 from services.task_scheduler import task_scheduler
 from utils.logger import logger
@@ -42,6 +42,7 @@ app.include_router(bangumi.router)
 app.include_router(change_statistics.router)
 app.include_router(anime_now.router)
 app.include_router(info.router)
+app.include_router(search.router)
 
 logger.info("\n\n\n------------------------------\n\n\n")
 logger.info("API启动:" + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))

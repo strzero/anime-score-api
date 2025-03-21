@@ -5,7 +5,7 @@ from typing import Optional, Dict, List
 from uuid import UUID
 
 from models.db_model import BangumiData, BangumiTags, BangumiData_Pydantic
-
+from datetime import date
 
 
 class IdResponse(BaseModel):
@@ -67,3 +67,13 @@ class NormalResponse(BaseModel):
 class NowResponse(BaseModel):
     status: Optional[int] = None
     message: Optional[str] = None
+
+class BangumiResponse(BaseModel):
+    id: int
+    name: str
+    name_cn: str
+    date: date
+    score: float
+
+    class Config:
+        from_attributes = True
