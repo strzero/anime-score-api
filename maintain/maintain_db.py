@@ -64,7 +64,7 @@ async def maintain_db():
                 if download_bangumi_data():
                     if update_bangumi_data():
                         logger.info("Bangumi数据库更新成功！")
-                        await update_local_version_time(web_version_time)
+                        # await update_local_version_time(web_version_time)
                         update_file_version_time(web_version_time)
                     else:
                         logger.error("Bangumi数据库更新失败！")
