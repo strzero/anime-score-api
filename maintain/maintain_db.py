@@ -10,8 +10,7 @@ from tortoise.exceptions import DBConnectionError
 async def get_local_version_time():
     """ 获取本地存储的数据库更新时间 """
     try:
-        result = await Info.filter(variable='time').values_list('value', flat=True).first()
-        return result if result else None
+        return await Info.filter(variable='time').values_list('value', flat=True).get_or_none()
     except DBConnectionError:
         logger.warning("数据库连接丢失，尝试重新连接...")
         return None
