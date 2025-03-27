@@ -35,3 +35,12 @@ jobs:
         tags: |
           stellatezero/anime-score-api:latest
           stellatezero/anime-score-api:${{ env.TIMESTAMP }}
+
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: root
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: bash /root/anime-score/run.sh
