@@ -44,6 +44,15 @@ app.include_router(anime_now.router)
 app.include_router(info.router)
 app.include_router(search.router)
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    from fastapi.responses import FileResponse
+    return FileResponse("static/favicon.ico")
+
+@app.get("/")
+async def home():
+    return "Anime Score Api"
+
 logger.info("\n\n\n------------------------------\n\n\n")
 logger.info("API启动:" + datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
