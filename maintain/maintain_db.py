@@ -66,6 +66,8 @@ async def maintain_db():
             # 如果 web 和 local 一致，直接更新文件版本时间
             if web_version_date == local_version_date:
                 update_file_version_date(web_version_date)
+            else:
+                await update_local_version_date(web_version_date)
             file_version_date = get_file_version_date()
             
             # 如果 web 与 local 或 file 不一致，则执行更新
