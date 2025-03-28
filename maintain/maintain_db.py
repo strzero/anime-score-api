@@ -21,11 +21,16 @@ async def get_local_version_date():
         return None
 
 def get_file_version_date():
-    """ 获取本地存储的数据库版本文件时间（仅日期） """
-    if os.path.exists(version_file):
-        timestamp = os.path.getmtime(version_file)
-        return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime('%Y-%m-%d')  # 仅取 YYYY-MM-DD
-    return None
+    """ 获取本地存储的数据库版本时间（仅日期），从文件内容读取 """
+    if not os.path.exists(version_file):
+        return None
+    try:
+        with open(version_file, "r") as f:
+            file_date = f.read().strip()  # 读取文件内容并去除空格
+            return file_date if file_date else None  # 确保不是空文件
+    except Exception as e:
+        logger.error(f"读取文件版本时间失败: {e}")
+        return None
 
 async def update_local_version_date(new_date):
     """ 更新本地存储的数据库更新时间（仅日期），仅在需要时更新 """
