@@ -1,3 +1,7 @@
+自动收集全球动画影视平台评分数据并进行缓存，同时提供分析工具。
+
+Automatically collect rating data from global animation and film platforms, cache it, and provide analysis tools.
+
 # 运行
 
 ## Docker
