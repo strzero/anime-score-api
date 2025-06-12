@@ -1,4 +1,4 @@
-name: Anime Api Build
+name: Anime Api Build and Deploy
 
 on:
   push:
