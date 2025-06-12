@@ -43,4 +43,4 @@ jobs:
         username: root
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        script: bash /root/anime-score/run.sh
+        script: bash /opt/anime-score-docker/run.sh
