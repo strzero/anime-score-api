@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Anime Api Build
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: FastAPI Tests
+name: Anime Api Test
 
 on: [push, pull_request]
 
