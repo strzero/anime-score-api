@@ -62,7 +62,7 @@ async def save_score_db(res: ScoreResponse, delete_day: int):
             score.filmarks_count = filmarks.count
             score.filmarks_id = filmarks.id
 
-        anikore = res.anilist
+        anikore = res.anikore
         if anikore.status // 100 == 2:
             score.anikore_title = anikore.title
             score.anikore_score = anikore.score
