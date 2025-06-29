@@ -22,7 +22,8 @@ async def renew_data():
 
         if not expired_scores:
             logger.info("无过期数据")
-            return
+            await asyncio.sleep(3600)
+            continue
         query_list = [QueryRequest(bangumi_id=score.bangumi_id) for score in expired_scores]
         logger.info("开始更新数据")
 
