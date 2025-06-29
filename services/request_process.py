@@ -90,7 +90,7 @@ async def process_query(request: QueryRequest) -> QueryResponse:
         else:
             bangumi_data = await process_bangumi(bangumi_id)
             id_data = await process_id(IdRequest(
-                title=bangumi_data.data.name,
+                title=bangumi_data.data.name if bangumi_data and bangumi_data.data else 'NoSetTitle',
                 bangumi_id=bangumi_id
             ))
             date = bangumi_data.data.date
@@ -103,7 +103,7 @@ async def process_query(request: QueryRequest) -> QueryResponse:
             else:
                 delete_day = 30
             score_data = await process_score(ScoreRequest(
-                title=bangumi_data.data.name,
+                title=bangumi_data.data.name if bangumi_data and bangumi_data.data else 'NoSetTitle',
                 bangumi_id=bangumi_id,
                 myanimelist_id=id_data.myanimelist_id,
                 anilist_id=id_data.anilist_id,

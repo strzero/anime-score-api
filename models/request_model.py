@@ -11,10 +11,10 @@ class IdRequest(BaseModel):
 class ScoreRequest(BaseModel):
     title: str = 'NoSetTitle'
     bangumi_id: int
-    myanimelist_id: str
-    anilist_id: str
-    filmarks_id: str
-    anikore_id: str
+    myanimelist_id: Optional[str] = None
+    anilist_id: Optional[str] = None
+    filmarks_id: Optional[str] = None
+    anikore_id: Optional[str] = None
     delete_day: int = 7
 
 class QueryRequest(BaseModel):
