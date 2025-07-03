@@ -36,11 +36,11 @@ jobs:
           stellatezero/anime-score-api:latest
           stellatezero/anime-score-api:${{ env.TIMESTAMP }}
 
-    - name: executing remote ssh commands using password
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.HOST }}
-        username: root
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: bash /opt/anime-score-docker/run.sh
+    # - name: executing remote ssh commands using password
+    #   uses: appleboy/ssh-action@v1
+    #   with:
+    #     host: ${{ secrets.HOST }}
+    #     username: root
+    #     password: ${{ secrets.PASSWORD }}
+    #     port: ${{ secrets.PORT }}
+    #     script: bash /opt/anime-score-docker/run.sh
